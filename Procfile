@@ -1,2 +1,3 @@
-web: python manage.py migrate && gunicorn config.wsgi:application
+web: python manage.py migrate && python manage.py auto_init && gunicorn config.wsgi:application
+
 
