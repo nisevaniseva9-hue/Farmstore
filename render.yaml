@@ -1,3 +1,8 @@
+databases:
+  - name: farmstore-db
+    plan: free
+    region: oregon
+
 services:
   - type: web
     name: farmstore
@@ -8,6 +13,10 @@ services:
     startCommand: "gunicorn config.wsgi:application"
     autoDeploy: true
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: farmstore-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
@@ -16,5 +25,6 @@ services:
         value: "True"
       - key: WHATSAPP_PROVIDER
         value: "console"
-      - key: DATABASE_URL
-        sync: false
+      - key: ALLOWED_HOSTS
+        value: "*"
+
