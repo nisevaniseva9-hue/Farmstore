@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-5">
+        {% if product.primary_image %}
+            <img src="{{ product.primary_image.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center text-muted rounded" style="height:300px;">
+                No image
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-7">
+        <h2>{{ product.name }}</h2>
+        <p class="text-muted">{{ product.category.name }}</p>
+        <p>{% include "partials/stock_badge.html" %}</p>
+        <h4 class="text-success">₹{{ product.price }} / {{ product.get_unit_display }}</h4>
+        <p>{{ product.description }}</p>
+        <p class="small text-muted">
+            Min order: {{ product.minimum_order_quantity }} {{ product.get_unit_display }}
+            {% if product.maximum_order_quantity %}
+                &middot; Max order: {{ product.maximum_order_quantity }} {{ product.get_unit_display }}
+            {% endif %}
+        </p>
+
+        {% if product.is_in_stock %}
+            <form method="post" action="{% url 'orders:cart_add' product.pk %}" class="d-flex align-items-center gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <label for="qty" class="form-label mb-0">Qty</label>
+                <input type="number" id="qty" name="quantity" class="form-control" style="width:100px;"
+                       min="{{ product.minimum_order_quantity }}"
+                       {% if product.maximum_order_quantity %}max="{{ product.maximum_order_quantity }}"{% endif %}
+                       value="{{ product.minimum_order_quantity }}" step="1">
+                <button type="submit" class="btn btn-success">
+                    Add to Cart
+                </button>
+            </form>
+        {% else %}
+            <p class="fw-bold text-danger">Out of Stock</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

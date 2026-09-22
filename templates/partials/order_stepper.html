@@ -1,0 +1,48 @@
+<div class="order-stepper-container">
+    {% if order.status == "rejected" %}
+        <div class="alert alert-danger mb-0 text-center">
+            ❌ <strong>Order Rejected</strong> — This order could not be fulfilled.
+        </div>
+    {% elif order.status == "cancelled" %}
+        <div class="alert alert-secondary mb-0 text-center">
+            🚫 <strong>Order Cancelled</strong> — This order was cancelled.
+        </div>
+    {% else %}
+        {% with s=order.status %}
+        <div class="order-stepper">
+            <div class="stepper-progress-fill" style="width: {% if s == 'delivered' %}100%{% elif s == 'out_for_delivery' %}75%{% elif s == 'delivery_scheduled' or s == 'preparing' %}50%{% elif s == 'confirmed' %}25%{% else %}0%{% endif %};"></div>
+
+            <div class="stepper-step {% if s == 'pending' %}active{% else %}completed{% endif %}">
+                <div class="stepper-circle">{% if s != 'pending' %}✓{% else %}1{% endif %}</div>
+                <div class="stepper-label">Order Placed</div>
+            </div>
+
+            <div class="stepper-step {% if s == 'confirmed' %}active{% elif s == 'preparing' or s == 'delivery_scheduled' or s == 'out_for_delivery' or s == 'delivered' %}completed{% endif %}">
+                <div class="stepper-circle">
+                    {% if s == 'preparing' or s == 'delivery_scheduled' or s == 'out_for_delivery' or s == 'delivered' %}✓{% else %}2{% endif %}
+                </div>
+                <div class="stepper-label">Approved</div>
+            </div>
+
+            <div class="stepper-step {% if s == 'preparing' or s == 'delivery_scheduled' %}active{% elif s == 'out_for_delivery' or s == 'delivered' %}completed{% endif %}">
+                <div class="stepper-circle">
+                    {% if s == 'out_for_delivery' or s == 'delivered' %}✓{% else %}3{% endif %}
+                </div>
+                <div class="stepper-label">Packing Fresh</div>
+            </div>
+
+            <div class="stepper-step {% if s == 'out_for_delivery' %}active{% elif s == 'delivered' %}completed{% endif %}">
+                <div class="stepper-circle">
+                    {% if s == 'delivered' %}✓{% else %}4{% endif %}
+                </div>
+                <div class="stepper-label">Out for Delivery</div>
+            </div>
+
+            <div class="stepper-step {% if s == 'delivered' %}completed active{% endif %}">
+                <div class="stepper-circle">{% if s == 'delivered' %}✓{% else %}5{% endif %}</div>
+                <div class="stepper-label">Delivered</div>
+            </div>
+        </div>
+        {% endwith %}
+    {% endif %}
+</div>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Inventory History - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-4">Inventory History {% if product %}&mdash; {{ product.name }}{% endif %}</h2>
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Date</th><th>Product</th><th>Type</th><th>Quantity</th><th>Note</th><th>By</th></tr></thead>
+            <tbody>
+                {% for txn in transactions %}
+                <tr>
+                    <td>{{ txn.created_at|date:"d M Y H:i" }}</td>
+                    <td>{{ txn.product.name }}</td>
+                    <td>{{ txn.get_transaction_type_display }}</td>
+                    <td class="{% if txn.quantity < 0 %}text-danger{% elif txn.quantity > 0 %}text-success{% endif %}">
+                        {{ txn.quantity }}
+                    </td>
+                    <td>{{ txn.note }}{{ txn.reference }}</td>
+                    <td>{{ txn.created_by|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No inventory transactions yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

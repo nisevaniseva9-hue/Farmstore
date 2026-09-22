@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Verify Payment - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-4">Verify Payment — {{ order.order_number }}</h2>
+        <p>Customer: {{ order.customer }}</p>
+        <p>Amount: <strong>₹{{ order.total }}</strong></p>
+        <p>Customer-provided reference: {{ order.payment_reference|default:"None provided" }}</p>
+        <p class="text-muted small">
+            Check your UPI app for a matching payment before approving. This must be verified manually --
+            it is never confirmed automatically.
+        </p>
+        <form method="post" class="d-flex gap-2">
+            {% csrf_token %}
+            <button type="submit" name="approve" value="1" class="btn btn-success">Mark as Paid</button>
+            <button type="submit" name="reject" value="1" class="btn btn-outline-danger">Mark as Failed</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

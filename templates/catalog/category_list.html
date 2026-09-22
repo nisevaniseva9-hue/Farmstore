@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Categories - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">Categories</h2>
+<div class="row row-cols-2 row-cols-md-4 g-3">
+    {% for category in categories %}
+    <div class="col">
+        <a href="{% url 'catalog:category_detail' category.slug %}" class="btn btn-outline-success w-100 py-3">
+            {{ category.name }}
+        </a>
+    </div>
+    {% empty %}
+        <p class="text-muted">No categories yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

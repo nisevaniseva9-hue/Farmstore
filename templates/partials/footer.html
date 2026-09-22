@@ -1,0 +1,42 @@
+<footer class="mt-5">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-md-5">
+                <h5 class="text-white fw-bold mb-2">🌱 {{ FARM_NAME }}</h5>
+                <p class="small text-muted mb-3" style="color: #a3b8aa !important;">{{ FARM_TAGLINE }}</p>
+                <div class="d-flex gap-3 small">
+                    <span>🚜 100% Organic</span>
+                    <span>⚡ Daily Harvest</span>
+                    <span>💬 Live WhatsApp Tracking</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <h6 class="text-white fw-bold mb-2">Quick Links</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-1"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="mb-1"><a href="{% url 'catalog:product_list' %}">All Produce</a></li>
+                    <li class="mb-1"><a href="{% url 'orders:cart_detail' %}">Shopping Cart</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'orders:order_list' %}">My Orders</a></li>
+                    {% else %}
+                        <li><a href="{% url 'accounts:login' %}">Customer Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="col-6 col-md-4">
+                <h6 class="text-white fw-bold mb-2">Farm Support</h6>
+                <p class="small text-muted mb-2" style="color: #a3b8aa !important;">
+                    Need help with your fresh produce order or special bulk inquiries?
+                </p>
+                <p class="small text-white mb-0">
+                    📲 Instant updates delivered to your WhatsApp with every order.
+                </p>
+            </div>
+        </div>
+        <hr class="border-secondary opacity-25 my-3">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center small text-muted">
+            <p class="mb-1 mb-sm-0" style="color: #8fa697 !important;">&copy; {% now "Y" %} {{ FARM_NAME }}. Fresh from our soil to your family.</p>
+            <p class="mb-0" style="color: #8fa697 !important;">Quality direct-from-farmer guarantee.</p>
+        </div>
+    </div>
+</footer>

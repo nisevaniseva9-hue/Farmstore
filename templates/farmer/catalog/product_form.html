@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Farmer: {% if product %}Edit{% else %}Add{% endif %} Product - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-4">{% if product %}Edit{% else %}Add{% endif %} Product</h2>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row">
+            {% for field in form %}
+                <div class="col-md-6 mb-3 {% if field.name == 'is_active' or field.name == 'is_featured' %}form-check{% endif %}">
+                    {% if field.name == 'is_active' or field.name == 'is_featured' %}
+                        {{ field }}
+                        <label class="form-check-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                    {% else %}
+                        <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-success">Save Product</button>
+        </form>
+
+        {% if product %}
+        <hr class="my-4">
+        <h4>Images</h4>
+        <div class="row g-3 mb-3">
+            {% for image in product.images.all %}
+            <div class="col-md-3">
+                <div class="card">
+                    <img src="{{ image.image.url }}" class="card-img-top" style="height:120px;object-fit:cover;">
+                    <div class="card-body p-2 text-center">
+                        {% if image.is_primary %}<span class="badge bg-success mb-1">Primary</span><br>{% endif %}
+                        <form method="post" action="{% url 'farmer_catalog:farmer_product_image_delete' product.pk image.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No images uploaded yet.</p>
+            {% endfor %}
+        </div>
+        <form method="post" action="{% url 'farmer_catalog:farmer_product_image_add' product.pk %}" enctype="multipart/form-data" class="d-flex align-items-end gap-2">
+            {% csrf_token %}
+            <div>
+                <label class="form-label">Add image</label>
+                {{ image_form.image }}
+            </div>
+            <div class="form-check">
+                {{ image_form.is_primary }}
+                <label class="form-check-label">Primary</label>
+            </div>
+            <button type="submit" class="btn btn-outline-success">Upload</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

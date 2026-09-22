@@ -1,0 +1,368 @@
+/* ==========================================================================
+   Farm Fresh — Modern Organic E-Commerce Design System
+   ========================================================================== */
+
+:root {
+    --farm-primary: #1b4332;         /* Deep Forest Green */
+    --farm-primary-light: #2d6a4f;   /* Leaf Green */
+    --farm-primary-hover: #173829;
+    --farm-primary-subtle: #e8f5e9;  /* Soft Green Tint */
+    --farm-accent: #e76f51;          /* Earthy Terracotta */
+    --farm-amber: #e9c46a;           /* Harvest Gold */
+    --farm-bg: #f8faf7;              /* Fresh Off-White */
+    --farm-card-bg: #ffffff;
+    --farm-text: #1f2421;
+    --farm-muted: #5c6760;
+    --farm-border: #e2ebe1;
+    --farm-radius: 12px;
+    --farm-radius-sm: 8px;
+    --farm-shadow-sm: 0 2px 8px rgba(27, 67, 50, 0.05);
+    --farm-shadow: 0 6px 18px rgba(27, 67, 50, 0.08);
+    --farm-shadow-hover: 0 12px 28px rgba(27, 67, 50, 0.14);
+}
+
+body {
+    background-color: var(--farm-bg);
+    color: var(--farm-text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   Navbar & Header
+   -------------------------------------------------------------------------- */
+.navbar.bg-success {
+    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%) !important;
+    box-shadow: 0 3px 12px rgba(27, 67, 50, 0.15);
+    padding: 0.75rem 0;
+}
+
+.navbar-brand {
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 0.5rem 0.85rem !important;
+    border-radius: var(--farm-radius-sm);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff !important;
+}
+
+.cart-badge {
+    background-color: var(--farm-amber) !important;
+    color: #1b4332 !important;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+    border-radius: 50rem;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Section & Badges
+   -------------------------------------------------------------------------- */
+.farm-hero {
+    background: linear-gradient(145deg, #ffffff 0%, #eef6ee 100%);
+    border: 1px solid var(--farm-border);
+    border-radius: var(--farm-radius);
+    padding: 3rem 1.5rem;
+    box-shadow: var(--farm-shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.farm-hero::after {
+    content: "🌱";
+    position: absolute;
+    right: 1.5rem;
+    bottom: -1rem;
+    font-size: 8rem;
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+.trust-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.trust-badge-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #ffffff;
+    border: 1px solid var(--farm-border);
+    padding: 0.4rem 0.9rem;
+    border-radius: 50rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--farm-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* --------------------------------------------------------------------------
+   Product Cards
+   -------------------------------------------------------------------------- */
+.product-card {
+    border: 1px solid var(--farm-border) !important;
+    border-radius: var(--farm-radius) !important;
+    background-color: var(--farm-card-bg);
+    box-shadow: var(--farm-shadow-sm);
+    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.25s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--farm-shadow-hover);
+    border-color: #c9dec6 !important;
+}
+
+.product-card .card-img-wrapper {
+    position: relative;
+    overflow: hidden;
+    height: 190px;
+    background-color: #f3f5f3;
+}
+
+.product-card .card-img-top {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.04);
+}
+
+.product-card .product-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--farm-text);
+    text-decoration: none;
+}
+
+.product-card .product-title:hover {
+    color: var(--farm-primary-light);
+}
+
+.product-card .price-tag {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--farm-primary);
+}
+
+.product-card .price-unit {
+    font-size: 0.85rem;
+    color: var(--farm-muted);
+    font-weight: normal;
+}
+
+/* --------------------------------------------------------------------------
+   Stock & Status Badges
+   -------------------------------------------------------------------------- */
+.badge-in-stock {
+    background-color: var(--farm-primary-subtle);
+    color: #1e5c3a;
+    border: 1px solid #c0e6c6;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35em 0.7em;
+    border-radius: 50rem;
+}
+
+.badge-low-stock {
+    background-color: #fff8e1;
+    color: #996500;
+    border: 1px solid #ffe082;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35em 0.7em;
+    border-radius: 50rem;
+}
+
+.badge-out-of-stock {
+    background-color: #fbe9e7;
+    color: #c62828;
+    border: 1px solid #ffccbc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.35em 0.7em;
+    border-radius: 50rem;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons & Interactions
+   -------------------------------------------------------------------------- */
+.btn-success {
+    background-color: var(--farm-primary-light) !important;
+    border-color: var(--farm-primary-light) !important;
+    font-weight: 600;
+    border-radius: var(--farm-radius-sm);
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: var(--farm-primary) !important;
+    border-color: var(--farm-primary) !important;
+    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.25);
+}
+
+.btn-outline-success {
+    color: var(--farm-primary-light) !important;
+    border-color: var(--farm-primary-light) !important;
+    font-weight: 600;
+    border-radius: var(--farm-radius-sm);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--farm-primary-light) !important;
+    color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   Visual Order Status Stepper
+   -------------------------------------------------------------------------- */
+.order-stepper-container {
+    background: #ffffff;
+    border: 1px solid var(--farm-border);
+    border-radius: var(--farm-radius);
+    padding: 1.5rem 1rem;
+    box-shadow: var(--farm-shadow-sm);
+    margin-bottom: 1.75rem;
+}
+
+.order-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.order-stepper::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background: #e2ebe1;
+    z-index: 1;
+}
+
+.stepper-progress-fill {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    height: 4px;
+    background: linear-gradient(90deg, #2d6a4f, #52b788);
+    z-index: 1;
+    transition: width 0.4s ease;
+}
+
+.stepper-step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+}
+
+.stepper-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 3px solid #d1ded0;
+    color: #889686;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.stepper-step.completed .stepper-circle {
+    background-color: var(--farm-primary-light);
+    border-color: var(--farm-primary-light);
+    color: #ffffff;
+}
+
+.stepper-step.active .stepper-circle {
+    background-color: #ffffff;
+    border-color: var(--farm-accent);
+    color: var(--farm-accent);
+    box-shadow: 0 0 0 4px rgba(231, 111, 81, 0.2);
+}
+
+.stepper-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--farm-muted);
+}
+
+.stepper-step.completed .stepper-label,
+.stepper-step.active .stepper-label {
+    color: var(--farm-primary);
+    font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Cards, Tables & Summary Boxes
+   -------------------------------------------------------------------------- */
+.card {
+    border: 1px solid var(--farm-border);
+    border-radius: var(--farm-radius);
+    box-shadow: var(--farm-shadow-sm);
+}
+
+.card-header {
+    background-color: #fbfdfa;
+    border-bottom: 1px solid var(--farm-border);
+    font-weight: 600;
+}
+
+.table th {
+    background-color: #f7faf6;
+    color: var(--farm-primary);
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+footer {
+    background-color: #172a1f !important;
+    color: #b7c7bc;
+    border-top: 3px solid var(--farm-primary-light);
+    padding: 2.5rem 0 1.5rem;
+}
+
+footer a {
+    color: #d8f3dc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+footer a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}

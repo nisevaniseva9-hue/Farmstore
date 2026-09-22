@@ -1,0 +1,29 @@
+<tr>
+    <td>
+        <div class="d-flex align-items-center gap-2">
+            {% if item.product.primary_image %}
+                <img src="{{ item.product.primary_image.image.url }}" style="width:48px;height:48px;object-fit:cover;" class="rounded">
+            {% endif %}
+            <a href="{{ item.product.get_absolute_url }}" class="text-decoration-none">{{ item.product.name }}</a>
+        </div>
+    </td>
+    <td>₹{{ item.price }} / {{ item.product.get_unit_display }}</td>
+    <td style="max-width:160px;">
+        <form method="post" action="{% url 'orders:cart_update' item.product.pk %}" class="d-flex gap-1 cart-qty-form">
+            {% csrf_token %}
+            <input type="number" name="quantity" value="{{ item.quantity }}" step="1"
+                   min="{{ item.product.minimum_order_quantity }}"
+                   {% if item.product.maximum_order_quantity %}max="{{ item.product.maximum_order_quantity }}"{% endif %}
+                   class="form-control form-control-sm cart-qty-input"
+                   data-unit-price="{{ item.price }}" data-subtotal-target="subtotal-{{ item.product.pk }}">
+            <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
+        </form>
+    </td>
+    <td id="subtotal-{{ item.product.pk }}">₹{{ item.subtotal }}</td>
+    <td>
+        <form method="post" action="{% url 'orders:cart_remove' item.product.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+        </form>
+    </td>
+</tr>

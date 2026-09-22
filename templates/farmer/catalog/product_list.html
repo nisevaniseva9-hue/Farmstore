@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Products - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Products</h2>
+            <a href="{% url 'farmer_catalog:farmer_product_add' %}" class="btn btn-success">Add Product</a>
+        </div>
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th><th>Category</th><th>Price</th><th>Unit</th>
+                    <th>Active</th><th>Featured</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td>₹{{ product.price }}</td>
+                    <td>{{ product.get_unit_display }}</td>
+                    <td>{% if product.is_active %}<span class="badge bg-success">Yes</span>{% else %}<span class="badge bg-secondary">No</span>{% endif %}</td>
+                    <td>{% if product.is_featured %}<span class="badge bg-warning text-dark">Yes</span>{% else %}—{% endif %}</td>
+                    <td><a href="{% url 'farmer_catalog:farmer_product_edit' product.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">No products yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

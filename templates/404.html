@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found (404) - {{ FARM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="display-1 text-success mb-3">🌱 404</div>
+    <h2 class="fw-bold mb-3">Harvest Not Found</h2>
+    <p class="lead text-muted mx-auto mb-4" style="max-width: 500px;">
+        We couldn't find the page or produce you're looking for. It might have been moved or is currently out of season.
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'home' %}" class="btn btn-success px-4 rounded-pill">🌾 Return to Farm Store</a>
+        <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-success px-4 rounded-pill">Browse All Produce</a>
+    </div>
+</div>
+{% endblock %}

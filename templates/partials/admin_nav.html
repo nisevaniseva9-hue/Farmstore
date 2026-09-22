@@ -1,0 +1,13 @@
+<div class="list-group mb-4">
+    <a href="{% url 'farmer_orders:dashboard' %}" class="list-group-item list-group-item-action">Dashboard</a>
+    <a href="{% url 'farmer_catalog:farmer_product_list' %}" class="list-group-item list-group-item-action">Products</a>
+    <a href="{% url 'farmer_catalog:farmer_category_list' %}" class="list-group-item list-group-item-action">Categories</a>
+    <a href="{% url 'inventory:current_stock' %}" class="list-group-item list-group-item-action">Current Stock</a>
+    <a href="{% url 'inventory:add_stock' %}" class="list-group-item list-group-item-action">Add Stock</a>
+    <a href="{% url 'inventory:history' %}" class="list-group-item list-group-item-action">Inventory History</a>
+    <a href="{% url 'farmer_orders:order_list' %}" class="list-group-item list-group-item-action">Orders</a>
+    <a href="{% url 'farmer_payments:pending_verifications' %}" class="list-group-item list-group-item-action">Payments</a>
+    <a href="{% url 'farmer_notifications:notification_list' %}" class="list-group-item list-group-item-action">WhatsApp Notifications</a>
+    <a href="{% url 'farmer_orders:customer_list' %}" class="list-group-item list-group-item-action">Customers</a>
+    <a href="{% url 'farmer_payments:payment_settings' %}" class="list-group-item list-group-item-action">Settings</a>
+</div>

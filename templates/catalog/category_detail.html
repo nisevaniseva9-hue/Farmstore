@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }} - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<h2 class="mb-1">{{ category.name }}</h2>
+{% if category.description %}<p class="text-muted">{{ category.description }}</p>{% endif %}
+
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mt-2">
+    {% for product in page_obj %}
+        {% include "partials/product_card.html" %}
+    {% empty %}
+        <p class="text-muted">No products in this category yet.</p>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Your Cart - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<h2 class="mb-4">Your Cart</h2>
+
+{% if cart|length > 0 %}
+<div class="row">
+    <div class="col-md-8">
+        <table class="table align-middle">
+            <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr></thead>
+            <tbody>
+                {% for item in cart %}
+                    {% include "partials/cart_item.html" %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <form method="post" action="{% url 'orders:cart_clear' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Clear Cart</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        {% include "partials/order_summary.html" %}
+        <a href="{% url 'orders:checkout' %}" class="btn btn-success w-100 mt-3">
+            Proceed to Checkout
+        </a>
+    </div>
+</div>
+{% else %}
+    <p class="text-muted">Your cart is empty.</p>
+    <a href="{% url 'catalog:product_list' %}" class="btn btn-success">Browse Products</a>
+{% endif %}
+{% endblock %}

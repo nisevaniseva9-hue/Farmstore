@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Orders - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-3">Orders</h2>
+        <ul class="nav nav-pills mb-4">
+            {% for value, label in status_tabs %}
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == value %}active{% endif %}"
+                   href="?status={{ value }}">{{ label }}</a>
+            </li>
+            {% endfor %}
+            <li class="nav-item">
+                <a class="nav-link {% if current_status == 'all' %}active{% endif %}" href="?status=all">All</a>
+            </li>
+        </ul>
+
+        <table class="table align-middle">
+            <thead><tr><th>Order #</th><th>Customer</th><th>Date</th><th>Status</th><th>Payment</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td>{{ order.created_at|date:"d M Y" }}</td>
+                    <td>{% include "partials/order_status_badge.html" %}</td>
+                    <td>{{ order.get_payment_method_display }} &middot; {{ order.get_payment_status_display }}</td>
+                    <td>₹{{ order.total }}</td>
+                    <td><a href="{% url 'farmer_orders:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary">Manage</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">No orders in this status.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

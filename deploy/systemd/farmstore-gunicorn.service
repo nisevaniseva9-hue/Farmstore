@@ -1,0 +1,38 @@
+# systemd unit for Gunicorn serving the farmstore Django app.
+#
+# Install:
+#   sudo cp deploy/systemd/farmstore-gunicorn.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now farmstore-gunicorn
+#   sudo systemctl status farmstore-gunicorn
+#
+# Replace:
+#   - User/Group          -> a non-root deploy user you create for this
+#   - WorkingDirectory     -> the actual deployed project path
+#   - ExecStart paths      -> match WorkingDirectory
+#
+# View logs:
+#   sudo journalctl -u farmstore-gunicorn -f
+
+[Unit]
+Description=Gunicorn daemon for farmstore
+After=network.target postgresql.service
+
+[Service]
+User=deploy
+Group=www-data
+WorkingDirectory=/home/deploy/farmstore
+EnvironmentFile=/home/deploy/farmstore/.env
+ExecStart=/home/deploy/farmstore/.venv/bin/gunicorn \
+    config.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 30 \
+    --access-logfile /home/deploy/farmstore/logs/gunicorn-access.log \
+    --error-logfile /home/deploy/farmstore/logs/gunicorn-error.log
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

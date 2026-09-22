@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}All Products - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">🌾 All Farm Produce</h2>
+        <p class="text-muted mb-0">Directly harvested from our fields to your table</p>
+    </div>
+    <!-- Search Bar -->
+    <form method="get" class="d-flex gap-2" style="max-width: 320px;">
+        <input type="text" name="q" value="{{ query }}" class="form-control rounded-pill px-3" placeholder="Search produce...">
+        {% if category_slug %}<input type="hidden" name="category" value="{{ category_slug }}">{% endif %}
+        <button type="submit" class="btn btn-success rounded-pill px-3">Search</button>
+    </form>
+</div>
+
+<!-- Category Filters -->
+<div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="{% url 'catalog:product_list' %}{% if query %}?q={{ query }}{% endif %}" class="btn btn-sm {% if not category_slug %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+        All
+    </a>
+    {% for cat in categories %}
+        <a href="{% url 'catalog:product_list' %}?category={{ cat.slug }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-sm {% if category_slug == cat.slug %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+            {{ cat.name }}
+        </a>
+    {% endfor %}
+</div>
+
+{% if query %}
+    <p class="text-muted mb-3">Showing results for: <strong>"{{ query }}"</strong> <a href="{% url 'catalog:product_list' %}" class="text-danger small ms-2 text-decoration-none">✕ Clear</a></p>
+{% endif %}
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for product in page_obj %}
+        {% include "partials/product_card.html" %}
+    {% empty %}
+        <div class="col-12 py-5 text-center text-muted">
+            <p class="fs-5">No produce found matching your search.</p>
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-outline-success btn-sm rounded-pill">View All Produce</a>
+        </div>
+    {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

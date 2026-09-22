@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Addresses - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Addresses</h2>
+    <a href="{% url 'accounts:address_create' %}" class="btn btn-success">Add Address</a>
+</div>
+
+{% if addresses %}
+    <div class="row g-3">
+        {% for address in addresses %}
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    {% if address.is_default %}<span class="badge bg-success mb-2">Default</span>{% endif %}
+                    <h5 class="card-title">{{ address.label|default:"Address" }}</h5>
+                    <p class="card-text mb-1">{{ address.full_name }} &middot; {{ address.phone_number }}</p>
+                    <p class="card-text mb-1">{{ address.line1 }}{% if address.line2 %}, {{ address.line2 }}{% endif %}</p>
+                    <p class="card-text mb-3">{{ address.city }}, {{ address.state }} - {{ address.postal_code }}</p>
+                    <a href="{% url 'accounts:address_edit' address.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{% url 'accounts:address_delete' address.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">You haven't added any addresses yet.</p>
+{% endif %}
+{% endblock %}

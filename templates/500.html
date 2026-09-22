@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Server Error (500) - {{ FARM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="display-1 text-warning mb-3">🚜 500</div>
+    <h2 class="fw-bold mb-3">Temporary Farm Hiccup</h2>
+    <p class="lead text-muted mx-auto mb-4" style="max-width: 500px;">
+        Something unexpected occurred on our farm server. Our team has been alerted and is tending to it right now.
+    </p>
+    <a href="{% url 'home' %}" class="btn btn-success px-4 rounded-pill">Return to Home</a>
+</div>
+{% endblock %}

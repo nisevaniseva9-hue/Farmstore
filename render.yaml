@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: farmstore
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: WHATSAPP_PROVIDER
+        value: "console"
+      - key: DATABASE_URL
+        sync: false

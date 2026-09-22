@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Farmer Dashboard - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-4">Dashboard</h2>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(145deg, #ffffff, #f0f7f2); border-left: 4px solid var(--farm-primary-light) !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">Pending Orders</p>
+                                <h2 class="fw-bold mb-0 text-success">{{ pending_orders }}</h2>
+                            </div>
+                            <span class="fs-1">📦</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(145deg, #ffffff, #fdfbf5); border-left: 4px solid var(--farm-amber) !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">Total Sales</p>
+                                <h2 class="fw-bold mb-0 text-dark">₹{{ total_sales }}</h2>
+                            </div>
+                            <span class="fs-1">💰</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(145deg, #ffffff, #fafafa); border-left: 4px solid #6c757d !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">Today's Orders</p>
+                                <h2 class="fw-bold mb-0 text-dark">{{ todays_orders }}</h2>
+                            </div>
+                            <span class="fs-1">📅</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: #ffffff; border-left: 4px solid #198754 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">In Stock</p>
+                                <h3 class="fw-bold mb-0 text-success">{{ in_stock_count }} <span class="fs-6 text-muted font-monospace">/ {{ total_products }}</span></h3>
+                            </div>
+                            <span class="fs-2">🥬</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: #ffffff; border-left: 4px solid #dc3545 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">Low Stock Alert</p>
+                                <h3 class="fw-bold mb-0 {% if low_stock_count %}text-danger{% else %}text-muted{% endif %}">{{ low_stock_count }}</h3>
+                            </div>
+                            <span class="fs-2">⚠️</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4">
+                <div class="card h-100 border-0 shadow-sm" style="background: #ffffff; border-left: 4px solid #0dcaf0 !important;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="text-muted mb-1 small fw-semibold text-uppercase">Quick Actions</p>
+                                <a href="{% url 'farmer_catalog:farmer_product_add' %}" class="btn btn-sm btn-outline-success mt-1">+ New Product</a>
+                            </div>
+                            <span class="fs-2">🌱</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3">Recent Orders</h4>
+        <table class="table">
+            <thead><tr><th>Order #</th><th>Customer</th><th>Status</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.customer }}</td>
+                    <td>{% include "partials/order_status_badge.html" %}</td>
+                    <td>₹{{ order.total }}</td>
+                    <td><a href="{% url 'farmer_orders:order_detail' order.order_number %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No orders yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

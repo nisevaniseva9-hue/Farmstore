@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Order {{ order.order_number }} - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Order {{ order.order_number }}</h2>
+            {% include "partials/order_status_badge.html" %}
+        </div>
+
+        {% include "partials/order_stepper.html" %}
+
+        <div class="row">
+            <div class="col-md-7">
+                <h5>Customer</h5>
+                <p>{{ order.customer }} &middot; {{ order.customer.email }}</p>
+
+                <h5>Delivery Address</h5>
+                <p class="mb-1">{{ order.delivery_full_name }} &middot; {{ order.delivery_phone_number }}</p>
+                <p class="mb-1">{{ order.delivery_line1 }}{% if order.delivery_line2 %}, {{ order.delivery_line2 }}{% endif %}</p>
+                <p>{{ order.delivery_city }}, {{ order.delivery_state }} - {{ order.delivery_postal_code }}</p>
+
+                <h5 class="mt-4">Items</h5>
+                <table class="table">
+                    <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>₹{{ item.price }} / {{ item.unit }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹{{ item.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="3" class="text-end fw-bold">Total</td><td class="fw-bold">₹{{ order.total }}</td></tr>
+                    </tfoot>
+                </table>
+
+                <h5 class="mt-4">Status History</h5>
+                <ul class="list-group mb-4">
+                    {% for entry in order.status_history.all %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ entry.get_status_display }}{% if entry.note %} — {{ entry.note }}{% endif %}</span>
+                            <span class="text-muted small">{{ entry.created_at|date:"d M Y H:i" }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Payment</h5>
+                        <p class="mb-0">{{ order.get_payment_method_display }} &middot; {{ order.get_payment_status_display }}</p>
+                    </div>
+                </div>
+
+                {% if status_form.fields.status.choices %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Change Status</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in status_form %}
+                                <div class="mb-2">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" name="change_status" value="1" class="btn btn-success">Update Status</button>
+                        </form>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-secondary">This order is in a final status and cannot be changed further.</div>
+                {% endif %}
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Delivery Schedule</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in delivery_form %}
+                                <div class="mb-2">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" name="assign_delivery" value="1" class="btn btn-outline-success">Save Delivery Schedule</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h5 class="card-title text-success d-flex align-items-center justify-content-between">
+                            <span>💬 WhatsApp Notifications</span>
+                            {% if latest_notification %}
+                                {% if latest_notification.delivery_status == "sent" %}
+                                    <span class="badge bg-success">Sent</span>
+                                {% elif latest_notification.delivery_status == "simulated" %}
+                                    <span class="badge bg-info text-dark">Simulated</span>
+                                {% elif latest_notification.delivery_status == "failed" %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Skipped</span>
+                                {% endif %}
+                            {% endif %}
+                        </h5>
+                        <p class="small text-muted mb-2">Recipient: <strong>{{ order.delivery_phone_number }}</strong></p>
+
+                        {% if latest_notification %}
+                            <p class="small text-muted mb-2">
+                                Last notification: {{ latest_notification.get_notification_type_display }} ({{ latest_notification.sent_at|date:"d M H:i" }})
+                            </p>
+                        {% endif %}
+
+                        <form method="post" class="mb-2">
+                            {% csrf_token %}
+                            <button type="submit" name="send_whatsapp" value="1" class="btn btn-success btn-sm w-100 mb-2">
+                                📲 Send / Resend WhatsApp Notification
+                            </button>
+                        </form>
+
+                        {% if wa_me_url %}
+                            <a href="{{ wa_me_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-success btn-sm w-100">
+                                💬 Open WhatsApp Chat with Customer
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

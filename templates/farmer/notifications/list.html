@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Farmer: WhatsApp Notifications - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">WhatsApp Notifications</h2>
+            <a href="{% url 'farmer_notifications:notification_test' %}" class="btn btn-success btn-sm">
+                💬 Open WhatsApp Simulator & Test Tool
+            </a>
+        </div>
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Date</th><th>Type</th><th>To</th><th>Related</th><th>Status</th><th>Error</th></tr></thead>
+            <tbody>
+                {% for n in notifications %}
+                <tr>
+                    <td>{{ n.sent_at|date:"d M Y H:i" }}</td>
+                    <td>{{ n.get_notification_type_display }}</td>
+                    <td>{{ n.customer|default:"—" }} &middot; {{ n.phone_number|default:"—" }}</td>
+                    <td>
+                        {% if n.related_order %}{{ n.related_order.order_number }}{% endif %}
+                        {% if n.related_product %}{{ n.related_product.name }}{% endif %}
+                    </td>
+                    <td>
+                        {% if n.delivery_status == "sent" %}<span class="badge bg-success">Sent</span>
+                        {% elif n.delivery_status == "simulated" %}<span class="badge bg-info text-dark">Simulated (Dev)</span>
+                        {% elif n.delivery_status == "failed" %}<span class="badge bg-danger">Failed</span>
+                        {% else %}<span class="badge bg-secondary">Skipped</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if n.message_preview %}
+                            <details class="small">
+                                <summary class="text-primary text-truncate" style="max-width: 250px; cursor: pointer;">View message</summary>
+                                <pre class="bg-light p-2 rounded mt-1 border text-wrap" style="font-size: 0.75rem; white-space: pre-wrap;">{{ n.message_preview }}</pre>
+                            </details>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                        {% if n.error_message %}<div class="text-danger small mt-1">{{ n.error_message }}</div>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No notifications sent yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

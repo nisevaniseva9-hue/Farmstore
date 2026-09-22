@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Farmer: {% if form.instance.pk %}Edit{% else %}Add{% endif %} Category - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <h2 class="mb-4">{% if form.instance.pk %}Edit{% else %}Add{% endif %} Category</h2>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3 {% if field.name == 'is_active' %}form-check{% endif %}">
+                    {% if field.name == 'is_active' %}
+                        {{ field }}
+                        <label class="form-check-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                    {% else %}
+                        <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                        {{ field }}
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success">Save Category</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

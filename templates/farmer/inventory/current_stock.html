@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Farmer: Current Stock - {{ FARM_NAME }}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
+    <div class="col-md-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Current Stock</h2>
+            <div>
+                <a href="{% url 'inventory:add_stock' %}" class="btn btn-success">Add Stock</a>
+                <a href="{% url 'inventory:adjust_stock' %}" class="btn btn-outline-secondary">Adjust Stock</a>
+            </div>
+        </div>
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Product</th><th>Category</th><th>Available Stock</th><th>Unit</th><th></th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{% if row.is_low %}table-warning{% endif %}">
+                    <td>{{ row.product.name }}</td>
+                    <td>{{ row.product.category.name }}</td>
+                    <td>{{ row.stock }}{% if row.is_low %} <span class="badge bg-warning text-dark">Low</span>{% endif %}</td>
+                    <td>{{ row.product.get_unit_display }}</td>
+                    <td>
+                        <a href="{% url 'inventory:history_for_product' row.product.pk %}" class="btn btn-sm btn-outline-secondary">History</a>
+                        <form method="post" action="{% url 'inventory:notify_customers' row.product.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success" title="Notify opted-in customers via WhatsApp">
+                                Notify Customers
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No products yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
