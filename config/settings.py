@@ -232,6 +232,9 @@ TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM", default="")
 # --------------------------------------------------------------------------
 # Logging — errors go to a file, nothing sensitive is ever logged
 # --------------------------------------------------------------------------
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -245,10 +248,11 @@ LOGGING = {
         "console": {"class": "logging.StreamHandler", "formatter": "verbose"},
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": BASE_DIR / "logs" / "django.log",
+            "filename": LOGS_DIR / "django.log",
             "maxBytes": 5 * 1024 * 1024,
             "backupCount": 3,
             "formatter": "verbose",
+            "delay": True,
         },
     },
     "root": {"handlers": ["console"], "level": "INFO"},
