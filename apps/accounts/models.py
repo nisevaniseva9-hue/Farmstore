@@ -26,7 +26,7 @@ class User(AbstractUser):
 
     @property
     def is_farmer(self):
-        return self.role == self.Role.FARMER
+        return self.role == self.Role.FARMER or self.is_superuser
 
 
 phone_validator = RegexValidator(
