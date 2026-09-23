@@ -193,3 +193,85 @@ class FarmerCatalogAuthorizationTests(TestCase):
             },
         )
         self.assertFalse(Product.objects.filter(name="Hacked Product").exists())
+
+
+class MobilePhotoUploadAndOptimizationTests(TestCase):
+    def setUp(self):
+        self.farmer = User.objects.create_user(
+            username="farmer2", email="farmer2@example.com", password="pw12345!",
+            role=User.Role.FARMER, is_staff=True,
+        )
+        self.category = Category.objects.create(name="Farm Vegetables")
+
+    def test_farmer_add_product_with_photo(self):
+        from .forms import ProductForm
+        from PIL import Image
+        from io import BytesIO
+
+        # Simulate camera photo
+        img = Image.new("RGB", (1600, 1200), color="orange")
+        buf = BytesIO()
+        img.save(buf, format="JPEG")
+        buf.seek(0)
+        upload = SimpleUploadedFile("carrots.jpg", buf.read(), content_type="image/jpeg")
+
+        self.client.login(username="farmer2", password="pw12345!")
+        response = self.client.post(
+            reverse("farmer_catalog:farmer_product_add"),
+            {
+                "name": "Fresh Carrots",
+                "category": self.category.pk,
+                "description": "Crunchy farm carrots",
+                "price": "45.00",
+                "unit": "kg",
+                "minimum_order_quantity": "1",
+                "image": upload,
+                "is_active": "on",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        product = Product.objects.get(name="Fresh Carrots")
+        self.assertEqual(product.images.count(), 1)
+        self.assertTrue(product.primary_image.is_primary)
+
+        # Verify image was compressed & resized
+        saved_img = Image.open(product.primary_image.image.path)
+        self.assertLessEqual(saved_img.width, 1200)
+        self.assertLessEqual(saved_img.height, 1200)
+
+    def test_product_image_form_without_display_order(self):
+        # Verify that absence of display_order does not cause validation failure
+        upload = make_image_file("extra.jpg")
+        form = ProductImageForm(data={"is_primary": "on"}, files={"image": upload})
+        self.assertTrue(form.is_valid(), f"Errors: {form.errors}")
+
+    def test_annotated_stock_eliminates_query(self):
+        from django.db.models import Sum, Value
+        from django.db.models.functions import Coalesce
+
+        product = Product.objects.create(
+            name="Beetroot", category=self.category, price=Decimal("50.00")
+        )
+        # Without annotation
+        self.assertEqual(product.available_stock, Decimal("0"))
+
+        # With annotation
+        annotated_product = Product.objects.filter(pk=product.pk).annotate(
+            _annotated_stock=Value(Decimal("42.50"))
+        ).first()
+        self.assertEqual(annotated_product.available_stock, Decimal("42.50"))
+        self.assertTrue(annotated_product.is_in_stock)
+
+    def test_cache_invalidation_on_product_save(self):
+        from django.core.cache import cache
+
+        product = Product.objects.create(
+            name="Radish", category=self.category, price=Decimal("30.00")
+        )
+        cache.set("home_page_catalog", "cached_home_data", 300)
+        self.assertEqual(cache.get("home_page_catalog"), "cached_home_data")
+
+        # Saving product must invalidate
+        product.price = Decimal("32.00")
+        product.save()
+        self.assertIsNone(cache.get("home_page_catalog"))

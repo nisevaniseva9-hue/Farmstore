@@ -11,7 +11,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
-from apps.catalog.models import Product
+from apps.catalog.models import Product, invalidate_catalog_cache
 
 from .models import InventoryTransaction
 
@@ -72,6 +72,7 @@ def add_stock(product, quantity, user=None, note=""):
 
         notify_customers_stock_available(product)
 
+    invalidate_catalog_cache()
     return txn
 
 
@@ -81,13 +82,15 @@ def adjust_stock(product, delta, user=None, note=""):
     `delta` may be positive or negative but not zero."""
     if delta == 0:
         raise ValueError("Adjustment quantity cannot be zero.")
-    return InventoryTransaction.objects.create(
+    txn = InventoryTransaction.objects.create(
         product=product,
         transaction_type=InventoryTransaction.TransactionType.STOCK_ADJUSTMENT,
         quantity=delta,
         note=note,
         created_by=user,
     )
+    invalidate_catalog_cache()
+    return txn
 
 
 @transaction.atomic
@@ -111,13 +114,15 @@ def reserve_stock(product, quantity, user=None, reference=""):
             f"{quantity} requested."
         )
 
-    return InventoryTransaction.objects.create(
+    txn = InventoryTransaction.objects.create(
         product=product,
         transaction_type=InventoryTransaction.TransactionType.ORDER_RESERVED,
         quantity=-quantity,
         reference=reference,
         created_by=user,
     )
+    invalidate_catalog_cache()
+    return txn
 
 
 @transaction.atomic
@@ -126,13 +131,15 @@ def cancel_reservation(product, quantity, user=None, reference=""):
     rejected/cancelled before completion."""
     if quantity <= 0:
         raise ValueError("Quantity must be positive.")
-    return InventoryTransaction.objects.create(
+    txn = InventoryTransaction.objects.create(
         product=product,
         transaction_type=InventoryTransaction.TransactionType.ORDER_CANCELLED,
         quantity=quantity,
         reference=reference,
         created_by=user,
     )
+    invalidate_catalog_cache()
+    return txn
 
 
 @transaction.atomic

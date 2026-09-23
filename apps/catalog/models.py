@@ -11,6 +11,15 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 
+def invalidate_catalog_cache():
+    try:
+        from django.core.cache import cache
+        cache.delete("home_page_catalog")
+        cache.delete("catalog_products")
+    except Exception:
+        pass
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=110, unique=True, blank=True)
@@ -31,6 +40,12 @@ class Category(models.Model):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        invalidate_catalog_cache()
+
+    def delete(self, *args, **kwargs):
+        res = super().delete(*args, **kwargs)
+        invalidate_catalog_cache()
+        return res
 
     def get_absolute_url(self):
         return reverse("catalog:category_detail", kwargs={"slug": self.slug})
@@ -82,6 +97,12 @@ class Product(models.Model):
                 slug = f"{base_slug}-{counter}"
             self.slug = slug
         super().save(*args, **kwargs)
+        invalidate_catalog_cache()
+
+    def delete(self, *args, **kwargs):
+        res = super().delete(*args, **kwargs)
+        invalidate_catalog_cache()
+        return res
 
     def get_absolute_url(self):
         return reverse("catalog:product_detail", kwargs={"slug": self.slug})
@@ -99,6 +120,8 @@ class Product(models.Model):
     def available_stock(self):
         """Delegates to the inventory app (Phase 3+). Returns None if the
         inventory app isn't installed yet, so templates degrade gracefully."""
+        if hasattr(self, "_annotated_stock"):
+            return self._annotated_stock
         if hasattr(self, "_cached_available_stock"):
             return self._cached_available_stock
         from django.apps import apps as django_apps
@@ -146,3 +169,9 @@ class ProductImage(models.Model):
             ProductImage.objects.filter(product=self.product).exclude(
                 pk=self.pk
             ).update(is_primary=False)
+        invalidate_catalog_cache()
+
+    def delete(self, *args, **kwargs):
+        res = super().delete(*args, **kwargs)
+        invalidate_catalog_cache()
+        return res

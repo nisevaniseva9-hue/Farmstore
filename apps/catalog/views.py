@@ -1,11 +1,14 @@
+from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from .forms import CategoryForm, ProductForm, ProductImageForm
-from .models import Category, Product
+from .models import Category, Product, ProductImage
 
 
 # ---------------------------------------------------------------------------
@@ -13,13 +16,19 @@ from .models import Category, Product
 # ---------------------------------------------------------------------------
 
 def category_list(request):
-    categories = Category.objects.filter(is_active=True)
+    categories = Category.objects.filter(is_active=True).order_by("display_order", "name")
     return render(request, "catalog/category_list.html", {"categories": categories})
 
 
 def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug, is_active=True)
-    products = category.products.filter(is_active=True)
+    products = (
+        category.products.filter(is_active=True)
+        .annotate(_annotated_stock=Coalesce(Sum("inventory_transactions__quantity"), Value(Decimal("0"))))
+        .select_related("category")
+        .prefetch_related("images")
+        .order_by("name")
+    )
     paginator = Paginator(products, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
     return render(
@@ -31,12 +40,18 @@ def category_detail(request, slug):
 def product_list(request):
     query = request.GET.get("q", "").strip()
     category_slug = request.GET.get("category", "").strip()
-    products = Product.objects.filter(is_active=True).select_related("category")
+    products = (
+        Product.objects.filter(is_active=True)
+        .annotate(_annotated_stock=Coalesce(Sum("inventory_transactions__quantity"), Value(Decimal("0"))))
+        .select_related("category")
+        .prefetch_related("images")
+        .order_by("name")
+    )
     if query:
         products = products.filter(name__icontains=query)
     if category_slug:
         products = products.filter(category__slug=category_slug)
-    categories = Category.objects.filter(is_active=True)
+    categories = Category.objects.filter(is_active=True).order_by("display_order", "name")
     paginator = Paginator(products, 12)
     page_obj = paginator.get_page(request.GET.get("page"))
     return render(
@@ -52,7 +67,13 @@ def product_list(request):
 
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug, is_active=True)
+    product = get_object_or_404(
+        Product.objects.annotate(
+            _annotated_stock=Coalesce(Sum("inventory_transactions__quantity"), Value(Decimal("0")))
+        ).select_related("category").prefetch_related("images"),
+        slug=slug,
+        is_active=True,
+    )
     return render(request, "catalog/product_detail.html", {"product": product})
 
 
@@ -76,9 +97,12 @@ def farmer_product_list(request):
 @farmer_required
 def farmer_product_add(request):
     if request.method == "POST":
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save()
+            image_file = form.cleaned_data.get("image")
+            if image_file:
+                ProductImage.objects.create(product=product, image=image_file, is_primary=True)
             messages.success(request, f"Product '{product.name}' created.")
             return redirect("farmer_catalog:farmer_product_edit", pk=product.pk)
     else:
@@ -90,9 +114,13 @@ def farmer_product_add(request):
 def farmer_product_edit(request, pk):
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
+            image_file = form.cleaned_data.get("image")
+            if image_file:
+                is_first = not product.images.filter(is_primary=True).exists()
+                ProductImage.objects.create(product=product, image=image_file, is_primary=is_first)
             messages.success(request, "Product updated.")
             return redirect("farmer_catalog:farmer_product_edit", pk=product.pk)
     else:
@@ -113,11 +141,14 @@ def farmer_product_image_add(request, pk):
         if form.is_valid():
             image = form.save(commit=False)
             image.product = product
+            if not product.images.filter(is_primary=True).exists():
+                image.is_primary = True
             image.save()
-            messages.success(request, "Image uploaded.")
+            messages.success(request, "Image uploaded successfully.")
         else:
-            for error in form.errors.get("image", []):
-                messages.error(request, error)
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, error if field in ("__all__", "image") else f"{field}: {error}")
     return redirect("farmer_catalog:farmer_product_edit", pk=product.pk)
 
 

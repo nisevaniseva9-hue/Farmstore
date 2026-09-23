@@ -180,6 +180,26 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --------------------------------------------------------------------------
+# File uploads (allow mobile camera photos up to 20MB)
+# --------------------------------------------------------------------------
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
+
+# --------------------------------------------------------------------------
+# In-memory caching for lightning fast catalog page loads
+# --------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "farmstore-cache",
+        "TIMEOUT": 300,
+        "OPTIONS": {
+            "MAX_ENTRIES": 1000,
+        },
+    }
+}
+
+# --------------------------------------------------------------------------
 # Security hardening (mostly relevant once DEBUG=False in production)
 # --------------------------------------------------------------------------
 CSRF_COOKIE_HTTPONLY = True

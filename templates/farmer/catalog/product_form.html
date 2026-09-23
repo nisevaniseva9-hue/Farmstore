@@ -1,65 +1,141 @@
 {% extends "base.html" %}
 {% block title %}Farmer: {% if product %}Edit{% else %}Add{% endif %} Product - {{ FARM_NAME }}{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
     <div class="col-md-9">
-        <h2 class="mb-4">{% if product %}Edit{% else %}Add{% endif %} Product</h2>
-        <form method="post" novalidate>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 mb-0">{% if product %}✏️ Edit{% else %}➕ Add{% endif %} Product</h2>
+            <a href="{% url 'farmer_catalog:farmer_product_list' %}" class="btn btn-outline-secondary btn-sm">← Back to List</a>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             <div class="row">
             {% for field in form %}
-                <div class="col-md-6 mb-3 {% if field.name == 'is_active' or field.name == 'is_featured' %}form-check{% endif %}">
-                    {% if field.name == 'is_active' or field.name == 'is_featured' %}
+                {% if field.name == 'image' %}
+                    <div class="col-12 mb-3">
+                        <div class="card p-3 border-success border-opacity-50 bg-light">
+                            <label class="form-label fw-bold text-success" for="id_{{ field.name }}">
+                                📸 {{ field.label }}
+                            </label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            <div id="image-preview-container" class="mt-2 d-none">
+                                <span class="d-block small text-muted mb-1">Selected Photo Preview:</span>
+                                <img id="image-preview" src="#" alt="Preview" class="rounded shadow-sm border" style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                            </div>
+                            {% for error in field.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% elif field.name == 'is_active' or field.name == 'is_featured' %}
+                    <div class="col-6 col-md-6 mb-3">
+                        <div class="form-check p-2 border rounded bg-light">
+                            {{ field }}
+                            <label class="form-check-label fw-semibold" for="id_{{ field.name }}">{{ field.label }}</label>
+                        </div>
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="col-12 col-md-6 mb-3">
+                        <label class="form-label fw-semibold" for="id_{{ field.name }}">{{ field.label }}</label>
                         {{ field }}
-                        <label class="form-check-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                    {% else %}
-                        <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                        {{ field }}
-                    {% endif %}
-                    {% for error in field.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
+                        {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             {% endfor %}
             </div>
-            <button type="submit" class="btn btn-success">Save Product</button>
+
+            <div class="d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-success px-4 py-2 fw-semibold flex-grow-1 flex-md-grow-0">
+                    💾 Save Product
+                </button>
+                <a href="{% url 'farmer_catalog:farmer_product_list' %}" class="btn btn-outline-secondary px-3 py-2">
+                    Cancel
+                </a>
+            </div>
         </form>
 
         {% if product %}
         <hr class="my-4">
-        <h4>Images</h4>
-        <div class="row g-3 mb-3">
+        <h4 class="h5 fw-bold mb-3">🖼️ Product Photos Gallery</h4>
+        <div class="row g-2 g-md-3 mb-3">
             {% for image in product.images.all %}
-            <div class="col-md-3">
-                <div class="card">
-                    <img src="{{ image.image.url }}" class="card-img-top" style="height:120px;object-fit:cover;">
+            <div class="col-6 col-md-3">
+                <div class="card h-100 shadow-sm border">
+                    <img src="{{ image.image.url }}" class="card-img-top" style="height: 140px; object-fit: cover;" alt="{{ product.name }}">
                     <div class="card-body p-2 text-center">
-                        {% if image.is_primary %}<span class="badge bg-success mb-1">Primary</span><br>{% endif %}
-                        <form method="post" action="{% url 'farmer_catalog:farmer_product_image_delete' product.pk image.pk %}">
+                        {% if image.is_primary %}
+                            <span class="badge bg-success mb-2">⭐ Primary Photo</span>
+                        {% else %}
+                            <span class="badge bg-secondary mb-2">Additional</span>
+                        {% endif %}
+                        <form method="post" action="{% url 'farmer_catalog:farmer_product_image_delete' product.pk image.pk %}" onsubmit="return confirm('Delete this photo?');">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">🗑️ Delete</button>
                         </form>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <p class="text-muted">No images uploaded yet.</p>
+            <div class="col-12">
+                <p class="text-muted fst-italic">No photos uploaded yet for this product.</p>
+            </div>
             {% endfor %}
         </div>
-        <form method="post" action="{% url 'farmer_catalog:farmer_product_image_add' product.pk %}" enctype="multipart/form-data" class="d-flex align-items-end gap-2">
-            {% csrf_token %}
-            <div>
-                <label class="form-label">Add image</label>
-                {{ image_form.image }}
-            </div>
-            <div class="form-check">
-                {{ image_form.is_primary }}
-                <label class="form-check-label">Primary</label>
-            </div>
-            <button type="submit" class="btn btn-outline-success">Upload</button>
-        </form>
+
+        <div class="card bg-light border p-3 mt-3">
+            <h5 class="card-title h6 fw-bold mb-2">📸 Upload Another Photo</h5>
+            <form method="post" action="{% url 'farmer_catalog:farmer_product_image_add' product.pk %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-2 align-items-center">
+                    <div class="col-12 col-md-6">
+                        {{ image_form.image }}
+                    </div>
+                    <div class="col-6 col-md-auto form-check ms-2 ms-md-0">
+                        {{ image_form.is_primary }}
+                        <label class="form-check-label ms-1" for="{{ image_form.is_primary.id_for_label }}">Set as Primary</label>
+                    </div>
+                    <div class="col-12 col-md-auto mt-2 mt-md-0">
+                        <button type="submit" class="btn btn-success w-100">Upload Photo</button>
+                    </div>
+                </div>
+            </form>
+        </div>
         {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("id_image");
+    if (input) {
+        input.addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            const previewContainer = document.getElementById("image-preview-container");
+            const previewImg = document.getElementById("image-preview");
+            if (file && previewContainer && previewImg) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    previewImg.src = evt.target.result;
+                    previewContainer.classList.remove("d-none");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
 {% endblock %}
