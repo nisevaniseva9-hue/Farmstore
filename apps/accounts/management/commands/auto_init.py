@@ -49,10 +49,4 @@ class Command(BaseCommand):
             self.style.SUCCESS(f"✓ {action} Farmer Admin ({admin_phone}) successfully.")
         )
 
-        # 2. Automatically seed products and categories
-        try:
-            call_command("seed_products")
-        except Exception as e:
-            self.stdout.write(self.style.WARNING(f"Product seeding notice: {e}"))
-
         self.stdout.write(self.style.SUCCESS("✓ Auto-initialization completed successfully!"))

@@ -38,6 +38,12 @@ class Command(BaseCommand):
                 "description": "Grains from our farm",
                 "display_order": 0,
             },
+            {
+                "name": "Eggs",
+                "slug": "eggs",
+                "description": "Fresh Farm Eggs",
+                "display_order": 8,
+            },
         ]
 
         categories = {}
@@ -148,21 +154,20 @@ class Command(BaseCommand):
                 "image": "products/wheat/wheat-6.jpeg",
                 "initial_stock": Decimal("500.00"),
             },
+            {
+                "name": "Farm Fresh Eggs",
+                "slug": "farm-fresh-eggs",
+                "category": "Eggs",
+                "description": "Naturally laid, high-protein fresh brown farm eggs.",
+                "price": Decimal("90.00"),
+                "unit": Product.Unit.DOZEN,
+                "moq": Decimal("1.00"),
+                "max_oq": None,
+                "is_featured": True,
+                "image": "products/eggs/eggs-1.jpg",
+                "initial_stock": Decimal("100.00"),
+            },
         ]
-
-        valid_slugs = [p["slug"] for p in products_data]
-
-        # Remove temporary placeholder products not belonging to farm catalog
-        dummy_products = Product.objects.exclude(slug__in=valid_slugs)
-        if dummy_products.exists():
-            InventoryTransaction.objects.filter(product__in=dummy_products).delete()
-            deleted_count, _ = dummy_products.delete()
-            if deleted_count > 0:
-                self.stdout.write(self.style.WARNING(f"  - Removed {deleted_count} dummy/placeholder items."))
-
-        # Clean up empty categories not in farm catalog
-        valid_cat_slugs = [c["slug"] for c in categories_data]
-        Category.objects.exclude(slug__in=valid_cat_slugs).filter(products__isnull=True).delete()
 
         count = 0
         for pdata in products_data:
