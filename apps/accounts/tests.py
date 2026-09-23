@@ -272,3 +272,39 @@ class FrictionlessAuthAndSimplifiedAddressTests(TestCase):
         self.assertEqual(address.full_name, "Amit")
         self.assertEqual(address.phone_number, "9822556677")
 
+    def test_address_form_placeholders_and_submission(self):
+        user = User.objects.create_user(
+            username="9822998877",
+            first_name="Sameer",
+            role=User.Role.CUSTOMER,
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("accounts:address_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'placeholder="e.g. HM Royal Society"')
+        self.assertContains(response, 'placeholder="e.g. Kondhwa"')
+        self.assertContains(response, 'placeholder="e.g. Opposite to Talab Factory"')
+        self.assertContains(response, 'placeholder="e.g. 411048"')
+
+        post_response = self.client.post(
+            reverse("accounts:address_create"),
+            {
+                "building_name": "HM Royal Society",
+                "flat_wing": "Flat 402, A Wing",
+                "area": "Kondhwa",
+                "locality": "Opposite to Talab Factory",
+                "city": "Pune",
+                "postal_code": "411048",
+            },
+        )
+        self.assertEqual(post_response.status_code, 302)
+        address = Address.objects.filter(customer=user).first()
+        self.assertIsNotNone(address)
+        self.assertEqual(address.line1, "Flat 402, A Wing")
+        self.assertEqual(address.line2, "HM Royal Society")
+        self.assertEqual(address.landmark, "Kondhwa, Opposite to Talab Factory")
+        self.assertEqual(address.city, "Pune")
+        self.assertEqual(address.postal_code, "411048")
+
+

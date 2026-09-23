@@ -116,7 +116,7 @@ class AddressForm(forms.ModelForm):
         max_length=255,
         required=False,
         label="Building Name / Society",
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Gokuldham Society / Sai Heights"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. HM Royal Society"}),
     )
     flat_wing = forms.CharField(
         max_length=255,
@@ -124,11 +124,22 @@ class AddressForm(forms.ModelForm):
         label="Flat No and Wing",
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Flat 402, A Wing"}),
     )
+    area = forms.CharField(
+        max_length=255,
+        required=False,
+        label="Area",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Kondhwa"}),
+    )
+    locality = forms.CharField(
+        max_length=255,
+        required=False,
+        label="Locality / Landmark",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Opposite to Talab Factory"}),
+    )
     area_locality = forms.CharField(
         max_length=255,
         required=False,
-        label="Area or Locality",
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. Shivajinagar / Near Bus Stop"}),
+        widget=forms.HiddenInput(),
     )
 
     city = forms.CharField(
@@ -141,7 +152,7 @@ class AddressForm(forms.ModelForm):
         max_length=12,
         required=True,
         label="Pincode",
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 411005"}),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "e.g. 411048"}),
     )
     full_name = forms.CharField(
         max_length=150,
@@ -166,7 +177,13 @@ class AddressForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields["flat_wing"].initial = self.instance.line1
             self.fields["building_name"].initial = self.instance.line2
-            self.fields["area_locality"].initial = self.instance.landmark
+            if self.instance.landmark:
+                if ", " in self.instance.landmark:
+                    parts = self.instance.landmark.split(", ", 1)
+                    self.fields["area"].initial = parts[0]
+                    self.fields["locality"].initial = parts[1]
+                else:
+                    self.fields["area"].initial = self.instance.landmark
             self.fields["full_name"].initial = self.instance.full_name
             self.fields["phone_number"].initial = self.instance.phone_number
         elif self.user:
@@ -177,6 +194,8 @@ class AddressForm(forms.ModelForm):
         cleaned_data = super().clean()
         fw = cleaned_data.get("flat_wing") or self.data.get("flat_wing") or self.data.get("line1")
         bn = cleaned_data.get("building_name") or self.data.get("building_name") or self.data.get("line2") or ""
+        ar = cleaned_data.get("area") or self.data.get("area") or ""
+        loc = cleaned_data.get("locality") or self.data.get("locality") or ""
         al = cleaned_data.get("area_locality") or self.data.get("area_locality") or self.data.get("landmark") or ""
 
         if not fw:
@@ -184,6 +203,8 @@ class AddressForm(forms.ModelForm):
 
         cleaned_data["flat_wing"] = fw or ""
         cleaned_data["building_name"] = bn or ""
+        cleaned_data["area"] = ar or ""
+        cleaned_data["locality"] = loc or ""
         cleaned_data["area_locality"] = al or ""
         return cleaned_data
 
@@ -191,7 +212,19 @@ class AddressForm(forms.ModelForm):
         address = super().save(commit=False)
         address.line1 = self.cleaned_data.get("flat_wing") or self.data.get("line1") or ""
         address.line2 = self.cleaned_data.get("building_name") or self.data.get("line2") or ""
-        address.landmark = self.cleaned_data.get("area_locality") or self.data.get("landmark") or ""
+
+        ar = self.cleaned_data.get("area") or self.data.get("area") or ""
+        loc = self.cleaned_data.get("locality") or self.data.get("locality") or ""
+        if ar and loc:
+            combined_landmark = f"{ar}, {loc}"
+        elif ar:
+            combined_landmark = ar
+        elif loc:
+            combined_landmark = loc
+        else:
+            combined_landmark = self.cleaned_data.get("area_locality") or self.data.get("area_locality") or self.data.get("landmark") or ""
+
+        address.landmark = combined_landmark
 
         full_name = self.cleaned_data.get("full_name") or self.data.get("full_name")
         if not full_name and self.user:

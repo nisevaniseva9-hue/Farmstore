@@ -36,14 +36,25 @@
                         {% endfor %}
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-dark" for="{{ form.area_locality.id_for_label }}">
-                            🗺️ Area or Locality <span class="text-danger">*</span>
-                        </label>
-                        {{ form.area_locality }}
-                        {% for error in form.area_locality.errors %}
-                            <div class="text-danger small mt-1">{{ error }}</div>
-                        {% endfor %}
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label fw-bold text-dark" for="{{ form.area.id_for_label }}">
+                                🗺️ Area <span class="text-danger">*</span>
+                            </label>
+                            {{ form.area }}
+                            {% for error in form.area.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="form-label fw-bold text-dark" for="{{ form.locality.id_for_label }}">
+                                📍 Locality / Landmark
+                            </label>
+                            {{ form.locality }}
+                            {% for error in form.locality.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <div class="row">
