@@ -37,3 +37,26 @@ def home(request):
 def health_check(request):
     """Simple health endpoint for deployment checks / uptime monitors."""
     return HttpResponse("OK")
+
+
+def debug_admin_trace(request):
+    import traceback
+    from django.test import RequestFactory
+    from django.contrib.admin.sites import site
+    from apps.catalog.models import Category
+    from apps.accounts.models import User
+
+    rf = RequestFactory()
+    req = rf.get("/admin/catalog/category/")
+    req.user = User.objects.filter(is_superuser=True).first()
+    req.session = request.session
+    try:
+        model_admin = site._registry[Category]
+        response = model_admin.changelist_view(req)
+        rendered = response.render()
+        return HttpResponse(f"SUCCESS: {len(rendered.content)} bytes")
+    except Exception as e:
+        return HttpResponse(
+            f"EXCEPTION: {type(e).__name__}: {e}\n\nTRACEBACK:\n{traceback.format_exc()}",
+            content_type="text/plain",
+        )

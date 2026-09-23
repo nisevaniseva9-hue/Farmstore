@@ -20,6 +20,7 @@ def cached_media_serve(request, path, document_root=None, show_indexes=False):
 urlpatterns = [
     path("", core_views.home, name="home"),
     path("health/", core_views.health_check, name="health_check"),
+    path("debug-admin-trace/", core_views.debug_admin_trace, name="debug_admin_trace"),
 
     path("admin/", admin.site.urls),
     path("account/", include("apps.accounts.urls")),
