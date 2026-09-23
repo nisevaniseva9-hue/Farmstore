@@ -366,3 +366,183 @@ footer a:hover {
     color: #ffffff;
     text-decoration: underline;
 }
+
+/* ==========================================================================
+   Mobile-First & Touchscreen Optimization (Screens < 768px & < 576px)
+   ========================================================================== */
+
+/* Prevent double-tap zoom delay on touch buttons */
+.btn, .nav-link, .mobile-nav-item {
+    touch-action: manipulation;
+}
+
+/* Mobile App Bottom Navigation Bar */
+.mobile-bottom-nav {
+    height: 62px;
+    z-index: 1040;
+    background: rgba(255, 255, 255, 0.96) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--farm-border) !important;
+    padding: 0 0.5rem;
+}
+
+.mobile-nav-item {
+    color: var(--farm-muted);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 0.72rem;
+    font-weight: 500;
+    transition: color 0.15s ease;
+    padding: 4px 0;
+}
+
+.mobile-nav-item.active, .mobile-nav-item:hover {
+    color: var(--farm-primary-light);
+    font-weight: 700;
+}
+
+.mobile-nav-icon {
+    font-size: 1.25rem;
+    line-height: 1.1;
+    position: relative;
+    display: inline-block;
+}
+
+.mobile-nav-label {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    letter-spacing: -0.01em;
+}
+
+.mobile-cart-badge {
+    top: 0 !important;
+    right: -12px !important;
+    font-size: 0.6rem !important;
+    padding: 0.25em 0.5em !important;
+    background-color: var(--farm-accent) !important;
+}
+
+@media (max-width: 767.98px) {
+    /* Provide clearance at page bottom for the fixed mobile bottom bar */
+    body {
+        padding-bottom: 74px;
+    }
+
+    /* Prevent auto-zooming in iOS Safari when tapping input fields */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* Full-width primary action buttons on mobile */
+    .btn-mobile-block {
+        width: 100% !important;
+    }
+
+    /* Compact container padding */
+    .container {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Hero section scaling */
+    .farm-hero {
+        padding: 1.75rem 1rem;
+        border-radius: var(--farm-radius-sm);
+    }
+
+    .farm-hero h1 {
+        font-size: 1.75rem;
+        letter-spacing: -0.02em;
+    }
+
+    .farm-hero .lead {
+        font-size: 0.95rem;
+    }
+
+    .trust-badges {
+        gap: 0.4rem;
+        margin-top: 1rem;
+    }
+
+    .trust-badge-item {
+        font-size: 0.72rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    /* 2-Column Product Grid Tuning */
+    .card-img-wrapper {
+        height: 125px;
+    }
+
+    .product-card .card-body {
+        padding: 0.6rem !important;
+    }
+
+    .product-card .product-title {
+        font-size: 0.84rem;
+        line-height: 1.25;
+        height: 2.5em;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-card .price-tag {
+        font-size: 0.95rem;
+    }
+
+    .product-card .price-unit {
+        font-size: 0.7rem;
+    }
+
+    .badge-in-stock, .badge-low-stock, .badge-out-of-stock {
+        font-size: 0.65rem;
+        padding: 0.2em 0.5em;
+    }
+
+    /* Compact Visual Order Stepper */
+    .order-stepper-container {
+        padding: 1rem 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .order-stepper::before, .stepper-progress-fill {
+        top: 14px;
+        height: 3px;
+        left: 18px;
+        right: 18px;
+    }
+
+    .stepper-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+        border-width: 2px;
+        margin-bottom: 0.25rem;
+    }
+
+    .stepper-label {
+        font-size: 0.62rem;
+        line-height: 1.15;
+    }
+
+    /* Tables: ensure smooth horizontal touch scrolling */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+

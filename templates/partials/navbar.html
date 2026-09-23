@@ -1,9 +1,22 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+<nav class="navbar navbar-expand-lg navbar-dark bg-success sticky-top">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{% url 'home' %}">🌱 {{ FARM_NAME }}</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        
+        <!-- Mobile Header Actions (Visible on screens < 992px) -->
+        <div class="d-flex align-items-center gap-2 d-lg-none">
+            <a href="{% url 'orders:cart_detail' %}" class="btn btn-outline-light btn-sm position-relative px-2 py-1" aria-label="Cart">
+                🛒
+                {% if CART_ITEM_COUNT %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size: 0.65rem;">
+                        {{ CART_ITEM_COUNT }}
+                    </span>
+                {% endif %}
+            </a>
+            <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>

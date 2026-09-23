@@ -22,22 +22,24 @@
                 <p>{{ order.delivery_city }}, {{ order.delivery_state }} - {{ order.delivery_postal_code }}</p>
 
                 <h5 class="mt-4">Items</h5>
-                <table class="table">
-                    <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
-                    <tbody>
-                        {% for item in order.items.all %}
-                        <tr>
-                            <td>{{ item.product_name }}</td>
-                            <td>₹{{ item.price }} / {{ item.unit }}</td>
-                            <td>{{ item.quantity }}</td>
-                            <td>₹{{ item.total }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr><td colspan="3" class="text-end fw-bold">Total</td><td class="fw-bold">₹{{ order.total }}</td></tr>
-                    </tfoot>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td>₹{{ item.price }} / {{ item.unit }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr><td colspan="3" class="text-end fw-bold">Total</td><td class="fw-bold">₹{{ order.total }}</td></tr>
+                        </tfoot>
+                    </table>
+                </div>
 
                 <h5 class="mt-4">Status History</h5>
                 <ul class="list-group mb-4">

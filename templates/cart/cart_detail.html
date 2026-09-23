@@ -6,14 +6,16 @@
 {% if cart|length > 0 %}
 <div class="row">
     <div class="col-md-8">
-        <table class="table align-middle">
-            <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr></thead>
-            <tbody>
-                {% for item in cart %}
-                    {% include "partials/cart_item.html" %}
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr></thead>
+                <tbody>
+                    {% for item in cart %}
+                        {% include "partials/cart_item.html" %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <form method="post" action="{% url 'orders:cart_clear' %}">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-secondary btn-sm">Clear Cart</button>

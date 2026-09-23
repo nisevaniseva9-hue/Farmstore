@@ -1,0 +1,47 @@
+<!-- Mobile App-Style Bottom Navigation Bar (Visible only on mobile/tablet screens < 768px) -->
+<nav class="mobile-bottom-nav d-flex d-md-none justify-content-around align-items-center fixed-bottom bg-white border-top shadow-lg py-2">
+    <a href="{% url 'home' %}" class="mobile-nav-item text-center text-decoration-none {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <div class="mobile-nav-icon">🏡</div>
+        <div class="mobile-nav-label">Home</div>
+    </a>
+
+    <a href="{% url 'catalog:product_list' %}" class="mobile-nav-item text-center text-decoration-none {% if 'catalog' in request.resolver_match.namespaces or request.resolver_match.url_name == 'product_list' %}active{% endif %}">
+        <div class="mobile-nav-icon">🥬</div>
+        <div class="mobile-nav-label">Produce</div>
+    </a>
+
+    <a href="{% url 'orders:cart_detail' %}" class="mobile-nav-item text-center text-decoration-none position-relative {% if request.resolver_match.url_name == 'cart_detail' %}active{% endif %}">
+        <div class="mobile-nav-icon">
+            🛒
+            {% if CART_ITEM_COUNT %}
+                <span class="mobile-cart-badge position-absolute translate-middle badge rounded-pill bg-danger">
+                    {{ CART_ITEM_COUNT }}
+                </span>
+            {% endif %}
+        </div>
+        <div class="mobile-nav-label">Cart</div>
+    </a>
+
+    {% if user.is_authenticated %}
+        {% if user.is_farmer %}
+            <a href="{% url 'farmer_orders:dashboard' %}" class="mobile-nav-item text-center text-decoration-none {% if 'farmer' in request.resolver_match.namespaces %}active{% endif %}">
+                <div class="mobile-nav-icon">🚜</div>
+                <div class="mobile-nav-label">Farmer</div>
+            </a>
+        {% else %}
+            <a href="{% url 'orders:order_list' %}" class="mobile-nav-item text-center text-decoration-none {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}">
+                <div class="mobile-nav-icon">📦</div>
+                <div class="mobile-nav-label">Orders</div>
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="mobile-nav-item text-center text-decoration-none {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                <div class="mobile-nav-icon">👤</div>
+                <div class="mobile-nav-label">Profile</div>
+            </a>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'accounts:login' %}" class="mobile-nav-item text-center text-decoration-none {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+            <div class="mobile-nav-icon">👤</div>
+            <div class="mobile-nav-label">Login</div>
+        </a>
+    {% endif %}
+</nav>
