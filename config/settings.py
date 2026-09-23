@@ -12,6 +12,24 @@ from decouple import config, Csv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --------------------------------------------------------------------------
+# Python 3.14+ compatibility monkeypatch for Django 4.2 BaseContext.__copy__
+# --------------------------------------------------------------------------
+try:
+    from django.template.context import BaseContext
+
+    def _patched_basecontext_copy(self):
+        cls = self.__class__
+        obj = cls.__new__(cls)
+        obj.__dict__ = self.__dict__.copy()
+        obj.dicts = self.dicts[:]
+        return obj
+
+    BaseContext.__copy__ = _patched_basecontext_copy
+except Exception:
+    pass
+
+
+# --------------------------------------------------------------------------
 # Core / security
 # --------------------------------------------------------------------------
 SECRET_KEY = config("SECRET_KEY")
