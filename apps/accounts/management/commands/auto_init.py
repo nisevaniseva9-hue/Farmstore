@@ -31,10 +31,16 @@ class Command(BaseCommand):
         profile.whatsapp_notifications_enabled = True
         profile.save()
 
-        # Set farmer notification number
+        # Set farmer notification number and payment settings
         try:
             ps = PaymentSettings.get_settings()
             ps.farmer_whatsapp_number = admin_phone
+            if not ps.upi_id:
+                ps.upi_id = "abc@hdfc"
+            if not ps.upi_display_name:
+                ps.upi_display_name = "Farmer"
+            if not ps.qr_code_image:
+                ps.qr_code_image = "payment_settings/upi_qr.jpg"
             ps.save()
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"PaymentSettings notice: {e}"))
