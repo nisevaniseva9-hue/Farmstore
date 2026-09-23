@@ -64,18 +64,61 @@ def pay_upi(request, order_number):
 # Farmer-only: settings + manual verification
 # ---------------------------------------------------------------------------
 
+def _extract_upi_from_qr(image_file):
+    if not image_file:
+        return None, None
+    try:
+        import urllib.parse
+        import zxingcpp
+        from PIL import Image, ImageOps
+
+        if hasattr(image_file, "seek"):
+            image_file.seek(0)
+        img = Image.open(image_file)
+        results = zxingcpp.read_barcodes(img)
+        if not results:
+            img_inv = ImageOps.invert(img.convert("RGB"))
+            results = zxingcpp.read_barcodes(img_inv)
+        if not results:
+            gray = img.convert("L")
+            results = zxingcpp.read_barcodes(gray) or zxingcpp.read_barcodes(ImageOps.invert(gray))
+
+        if results:
+            text = results[0].text
+            if "pa=" in text:
+                query = text.split("?", 1)[-1] if "?" in text else text
+                params = urllib.parse.parse_qs(query)
+                upi_id = params.get("pa", [None])[0]
+                display_name = params.get("pn", [None])[0]
+                return upi_id, display_name
+    except Exception:
+        pass
+    finally:
+        if hasattr(image_file, "seek"):
+            image_file.seek(0)
+    return None, None
+
+
 @farmer_required
 def payment_settings(request):
     settings_obj = PaymentSettings.get_settings()
     if request.method == "POST":
         form = PaymentSettingsForm(request.POST, request.FILES, instance=settings_obj)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Payment settings updated.")
+            instance = form.save(commit=False)
+            if "qr_code_image" in request.FILES:
+                extracted_upi, extracted_name = _extract_upi_from_qr(request.FILES["qr_code_image"])
+                if extracted_upi and not instance.upi_id:
+                    instance.upi_id = extracted_upi
+                if extracted_name and not instance.upi_display_name:
+                    instance.upi_display_name = extracted_name
+            instance.save()
+            messages.success(request, "Payment settings updated successfully.")
             return redirect("farmer_payments:payment_settings")
     else:
         form = PaymentSettingsForm(instance=settings_obj)
     return render(request, "farmer/payments/settings.html", {"form": form, "settings": settings_obj})
+
 
 
 @farmer_required

@@ -4,24 +4,65 @@
 <div class="row">
     <div class="col-md-3">{% include "partials/admin_nav.html" %}</div>
     <div class="col-md-9">
-        <h2 class="mb-4">Settings</h2>
-        <h5 class="text-muted">Payment</h5>
-        <form method="post" enctype="multipart/form-data" novalidate class="col-md-6">
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+        <h2 class="mb-3">Farmer Settings</h2>
+        
+        <div class="alert alert-info py-3 mb-4">
+            <h6 class="alert-heading fw-bold mb-1">💡 How UPI Payments & QR Code Work:</h6>
+            <ul class="mb-0 small ps-3">
+                <li><strong>UPI ID (Required for 1-Tap Buttons)</strong>: When customers tap <em>"Google Pay"</em> or <em>"PhonePe"</em> on their phones, their UPI app opens automatically using your <strong>UPI ID</strong> (e.g. <code>9325780114@ibl</code>).</li>
+                <li><strong>QR Code Image</strong>: Shown to customers ordering on desktop/laptop so they can scan it with their phone camera.</li>
+                <li><strong>Automatic Detection</strong>: Whenever you upload a QR code image below, the system automatically scans and extracts your UPI ID and Name!</li>
+            </ul>
+        </div>
+
+        {% if settings.upi_id %}
+            <div class="card border-success mb-4 shadow-sm" style="max-width: 600px;">
+                <div class="card-body bg-light">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge bg-success fs-6">✓ Active Payment Account</span>
+                        {% if settings.qr_code_image %}
+                            <span class="text-success small fw-semibold">QR Code Active</span>
+                        {% endif %}
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-sm-8">
+                            <div><strong>UPI ID:</strong> <span class="badge bg-dark fs-6">{{ settings.upi_id }}</span></div>
+                            {% if settings.upi_display_name %}
+                                <div class="text-muted small mt-1"><strong>Name:</strong> {{ settings.upi_display_name }}</div>
+                            {% endif %}
+                            {% if settings.farmer_whatsapp_number %}
+                                <div class="text-muted small"><strong>WhatsApp Alerts:</strong> +91 {{ settings.farmer_whatsapp_number }}</div>
+                            {% endif %}
+                        </div>
+                        {% if settings.qr_code_image %}
+                            <div class="col-sm-4 text-center mt-2 mt-sm-0">
+                                <img src="{{ settings.qr_code_image.url }}" style="max-height: 100px; border-radius: 8px;" class="border p-1 shadow-sm">
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endfor %}
-            {% if settings.qr_code_image %}
-                <p>Current QR code:</p>
-                <img src="{{ settings.qr_code_image.url }}" style="max-width:150px;" class="mb-3">
-            {% endif %}
-            <button type="submit" class="btn btn-success">Save Settings</button>
-        </form>
+            </div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0 mb-4" style="max-width: 600px;">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">Update Payment Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text small text-muted">{{ field.help_text }}</div>{% endif %}
+                            {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-success px-4 py-2 fw-semibold">💾 Save Settings</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

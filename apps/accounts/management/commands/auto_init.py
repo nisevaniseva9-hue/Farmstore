@@ -36,10 +36,12 @@ class Command(BaseCommand):
         # Set farmer notification number and payment settings
         try:
             ps = PaymentSettings.get_settings()
-            ps.farmer_whatsapp_number = "8552813624"
-            ps.upi_id = ps.upi_id or "abc@hdfc"
-            ps.upi_display_name = "Abdul Rauf (Farmer)"
-            ps.qr_code_image = ps.qr_code_image or "payment_settings/upi_qr.jpg"
+            if not ps.farmer_whatsapp_number:
+                ps.farmer_whatsapp_number = "8552813624"
+            if not ps.upi_id or ps.upi_id == "abc@hdfc":
+                ps.upi_id = "9325780114@ibl"
+            if not ps.upi_display_name:
+                ps.upi_display_name = "ARBAJ RAFIK SAYYAD"
             ps.save()
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"PaymentSettings notice: {e}"))

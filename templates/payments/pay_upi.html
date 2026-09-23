@@ -19,22 +19,22 @@
                            class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2">
                             <span>⚡ Pay ₹{{ order.total }} via UPI</span>
                         </a>
-                        <div class="small text-muted mb-2">Opens GPay, PhonePe, Paytm, or any UPI app on your phone</div>
+                        <div class="small text-muted mb-2">Tap above to pay via any UPI app, or pick your app below:</div>
                         
                         <!-- Dedicated App Buttons -->
                         <div class="d-flex gap-2 justify-content-center">
-                            <a href="gpay://upi/pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
-                               class="btn btn-outline-dark btn-sm flex-fill fw-semibold">
-                                Google Pay
-                            </a>
-                            <a href="phonepe://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
-                               class="btn btn-outline-primary btn-sm flex-fill fw-semibold">
-                                PhonePe
-                            </a>
-                            <a href="paytmmp://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
-                               class="btn btn-outline-info btn-sm flex-fill fw-semibold">
-                                Paytm
-                            </a>
+                            <button type="button" onclick="openUpiApp('gpay')" 
+                               class="btn btn-outline-dark btn-sm flex-fill fw-semibold py-2">
+                                🟢 Google Pay
+                            </button>
+                            <button type="button" onclick="openUpiApp('phonepe')" 
+                               class="btn btn-outline-primary btn-sm flex-fill fw-semibold py-2">
+                                🟣 PhonePe
+                            </button>
+                            <button type="button" onclick="openUpiApp('paytm')" 
+                               class="btn btn-outline-info btn-sm flex-fill fw-semibold py-2">
+                                🔵 Paytm
+                            </button>
                         </div>
                     </div>
                 {% endif %}
@@ -96,6 +96,33 @@
 </div>
 
 <script>
+function openUpiApp(target) {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const upiParams = "pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}";
+    
+    if (target === 'phonepe') {
+        if (isAndroid) {
+            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=com.phonepe.app;end";
+        } else {
+            window.location.href = "phonepe://pay?" + upiParams;
+        }
+    } else if (target === 'gpay') {
+        if (isAndroid) {
+            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
+        } else {
+            window.location.href = "gpay://upi/pay?" + upiParams;
+        }
+    } else if (target === 'paytm') {
+        if (isAndroid) {
+            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=net.one97.paytm;end";
+        } else {
+            window.location.href = "paytmmp://pay?" + upiParams;
+        }
+    } else {
+        window.location.href = "upi://pay?" + upiParams;
+    }
+}
+
 function copyUpiId() {
     const upiText = document.getElementById("upi-id-text").innerText.trim();
     if (upiText && upiText !== "Not configured") {
