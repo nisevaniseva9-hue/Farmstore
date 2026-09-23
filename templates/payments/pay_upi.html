@@ -15,7 +15,7 @@
                     <!-- 1-Tap Mobile UPI Payment Section -->
                     <div class="p-3 bg-light rounded-3 border mb-3">
                         <div class="fw-bold text-success mb-2 fs-6">📱 Mobile 1-Tap Payment</div>
-                        <a href="upi://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
+                        <a href="upi://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&mc=0000&mode=02&purpose=00&am={{ order.total }}&cu=INR&tn=FarmFreshOrder{{ order.id }}" 
                            class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2">
                             <span>⚡ Pay ₹{{ order.total }} via UPI</span>
                         </a>
@@ -98,26 +98,27 @@
 <script>
 function openUpiApp(target) {
     const isAndroid = /Android/i.test(navigator.userAgent);
-    const upiParams = "pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}";
+    const upiParams = "pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&mc=0000&mode=02&purpose=00&am={{ order.total }}&cu=INR&tn=FarmFreshOrder{{ order.id }}";
     
     if (target === 'phonepe') {
-        if (isAndroid) {
-            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=com.phonepe.app;end";
-        } else {
-            window.location.href = "phonepe://pay?" + upiParams;
-        }
+        window.location.href = "phonepe://pay?" + upiParams;
+        setTimeout(function() {
+            window.location.href = "upi://pay?" + upiParams;
+        }, 1200);
     } else if (target === 'gpay') {
         if (isAndroid) {
             window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
         } else {
             window.location.href = "gpay://upi/pay?" + upiParams;
         }
+        setTimeout(function() {
+            window.location.href = "upi://pay?" + upiParams;
+        }, 1200);
     } else if (target === 'paytm') {
-        if (isAndroid) {
-            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=net.one97.paytm;end";
-        } else {
-            window.location.href = "paytmmp://pay?" + upiParams;
-        }
+        window.location.href = "paytmmp://pay?" + upiParams;
+        setTimeout(function() {
+            window.location.href = "upi://pay?" + upiParams;
+        }, 1200);
     } else {
         window.location.href = "upi://pay?" + upiParams;
     }
