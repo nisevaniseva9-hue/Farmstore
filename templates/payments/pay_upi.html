@@ -1,41 +1,115 @@
 {% extends "base.html" %}
 {% block title %}Pay via UPI - {{ FARM_NAME }}{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body text-center">
-                <h4 class="card-title mb-4">Scan &amp; Pay</h4>
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-success text-white text-center py-3">
+                <h4 class="mb-0 fw-bold">💳 UPI Payment</h4>
+                <div class="small opacity-75">Order #{{ order.order_number }} &bull; Total: ₹{{ order.total }}</div>
+            </div>
 
-                {% if settings.qr_code_image %}
-                    <img src="{{ settings.qr_code_image.url }}" alt="UPI QR Code" style="max-width:250px;" class="mb-3">
-                {% else %}
-                    <div class="alert alert-secondary">
-                        The farmer hasn't uploaded a QR code yet. Use the UPI ID below to pay manually.
+            <div class="card-body p-4 text-center">
+                {% if settings.upi_id %}
+                    <!-- 1-Tap Mobile UPI Payment Section -->
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="fw-bold text-success mb-2 fs-6">📱 Mobile 1-Tap Payment</div>
+                        <a href="upi://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
+                           class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <span>⚡ Pay ₹{{ order.total }} via UPI</span>
+                        </a>
+                        <div class="small text-muted mb-2">Opens GPay, PhonePe, Paytm, or any UPI app on your phone</div>
+                        
+                        <!-- Dedicated App Buttons -->
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="gpay://upi/pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
+                               class="btn btn-outline-dark btn-sm flex-fill fw-semibold">
+                                Google Pay
+                            </a>
+                            <a href="phonepe://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
+                               class="btn btn-outline-primary btn-sm flex-fill fw-semibold">
+                                PhonePe
+                            </a>
+                            <a href="paytmmp://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=Order-{{ order.order_number }}" 
+                               class="btn btn-outline-info btn-sm flex-fill fw-semibold">
+                                Paytm
+                            </a>
+                        </div>
                     </div>
                 {% endif %}
 
-                <p class="mb-1"><strong>UPI ID:</strong> {{ settings.upi_id|default:"Not configured yet" }}</p>
-                {% if settings.upi_display_name %}
-                    <p class="mb-1 text-muted">{{ settings.upi_display_name }}</p>
-                {% endif %}
-                <h5 class="mt-3">Amount: ₹{{ order.total }}</h5>
-                <p class="text-muted small">Order {{ order.order_number }}</p>
+                <!-- QR Code Display (for scanning or desktop) -->
+                <div class="my-3">
+                    {% if settings.qr_code_image %}
+                        <div class="small text-muted mb-2">Or Scan QR Code to Pay:</div>
+                        <img src="{{ settings.qr_code_image.url }}" alt="UPI QR Code" class="img-fluid rounded-3 border p-2 shadow-xs mb-2" style="max-height: 220px;">
+                    {% else %}
+                        <div class="alert alert-secondary py-2 small">
+                            QR Code not uploaded yet. Use the UPI ID below to pay.
+                        </div>
+                    {% endif %}
+                </div>
 
-                <hr>
-                <form method="post" class="text-start">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">{{ form.reference.label }}</label>
-                        {{ form.reference }}
+                <!-- UPI ID & Details -->
+                <div class="bg-light p-3 rounded-3 border text-start mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted">UPI ID:</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="copy-upi-btn" onclick="copyUpiId()">
+                            📋 Copy
+                        </button>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">I Have Paid</button>
-                </form>
-                <p class="small text-muted mt-3">
-                    Clicking this does not automatically confirm payment — the farmer will verify it manually and update your order.
-                </p>
+                    <div class="fw-bold fs-6 text-dark" id="upi-id-text">{{ settings.upi_id|default:"Not configured" }}</div>
+                    {% if settings.upi_display_name %}
+                        <div class="small text-muted">Payee: {{ settings.upi_display_name }}</div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-3">
+
+                <!-- Payment Confirmation Form -->
+                <div class="text-start">
+                    <h6 class="fw-bold mb-2">Step 2: Confirm Your Payment</h6>
+                    <p class="small text-muted mb-2">
+                        After completing the payment in your UPI app, enter the 12-digit UPI Reference Number (UTR) below:
+                    </p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold" for="id_reference">UPI Reference / UTR Number</label>
+                            {{ form.reference }}
+                            {% for error in form.reference.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                            ✅ I Have Paid (Submit for Verification)
+                        </button>
+                    </form>
+                    <div class="small text-muted mt-2 text-center">
+                        Farmer Abdul Rauf will verify your payment and prepare your order for delivery.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function copyUpiId() {
+    const upiText = document.getElementById("upi-id-text").innerText.trim();
+    if (upiText && upiText !== "Not configured") {
+        navigator.clipboard.writeText(upiText).then(() => {
+            const btn = document.getElementById("copy-upi-btn");
+            const oldText = btn.innerText;
+            btn.innerText = "✓ Copied!";
+            btn.classList.replace("btn-outline-secondary", "btn-success");
+            setTimeout(() => {
+                btn.innerText = oldText;
+                btn.classList.replace("btn-success", "btn-outline-secondary");
+            }, 2000);
+        });
+    }
+}
+</script>
 {% endblock %}
