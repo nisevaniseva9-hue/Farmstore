@@ -275,3 +275,33 @@ class MobilePhotoUploadAndOptimizationTests(TestCase):
         product.price = Decimal("32.00")
         product.save()
         self.assertIsNone(cache.get("home_page_catalog"))
+
+    def test_home_page_only_shows_featured_products(self):
+        from django.core.cache import cache
+        cache.clear()
+
+        Product.objects.create(
+            name="Featured Mango",
+            category=self.category,
+            price=Decimal("150.00"),
+            is_active=True,
+            is_featured=True,
+        )
+        Product.objects.create(
+            name="Regular Potato",
+            category=self.category,
+            price=Decimal("30.00"),
+            is_active=True,
+            is_featured=False,
+        )
+
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Featured Mango")
+        self.assertNotContains(response, "Regular Potato")
+
+        # But all products list must still show both
+        list_response = self.client.get(reverse("catalog:product_list"))
+        self.assertEqual(list_response.status_code, 200)
+        self.assertContains(list_response, "Featured Mango")
+        self.assertContains(list_response, "Regular Potato")

@@ -19,7 +19,7 @@ def home(request):
     else:
         categories = list(Category.objects.filter(is_active=True).order_by("display_order", "name"))
         products = list(
-            Product.objects.filter(is_active=True)
+            Product.objects.filter(is_active=True, is_featured=True)
             .annotate(_annotated_stock=Coalesce(Sum("inventory_transactions__quantity"), Value(Decimal("0"))))
             .select_related("category")
             .prefetch_related("images")
