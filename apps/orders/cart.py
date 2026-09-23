@@ -99,7 +99,11 @@ class Cart:
         deleted or deactivated so a stale session never lets someone
         check out with something that's no longer sellable."""
         product_ids = list(self.cart.keys())
-        products = Product.objects.filter(pk__in=product_ids, is_active=True)
+        products = (
+            Product.objects.filter(pk__in=product_ids, is_active=True)
+            .select_related("category")
+            .prefetch_related("images")
+        )
         products_by_id = {str(p.pk): p for p in products}
 
         stale_ids = [pid for pid in product_ids if pid not in products_by_id]
