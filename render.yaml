@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: "./build.sh"
-    startCommand: "python manage.py migrate && python manage.py auto_init && gunicorn config.wsgi:application"
+    startCommand: "python manage.py migrate && python manage.py auto_init && gunicorn config.wsgi:application --workers 3 --threads 2"
     autoDeploy: true
     envVars:
       - key: DATABASE_URL

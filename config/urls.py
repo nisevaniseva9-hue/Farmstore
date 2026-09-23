@@ -12,6 +12,11 @@ from django.views.static import serve
 
 from config import views as core_views
 
+def cached_media_serve(request, path, document_root=None, show_indexes=False):
+    response = serve(request, path, document_root, show_indexes)
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
 urlpatterns = [
     path("", core_views.home, name="home"),
     path("health/", core_views.health_check, name="health_check"),
@@ -27,5 +32,5 @@ urlpatterns = [
     path("farmer/payments/", include("apps.payments.farmer_urls")),
     path("farmer/notifications/", include("apps.notifications.urls")),
     path("farmer/inventory/", include("apps.inventory.urls")),
-    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    re_path(r"^media/(?P<path>.*)$", cached_media_serve, {"document_root": settings.MEDIA_ROOT}),
 ]

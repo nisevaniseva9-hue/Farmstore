@@ -5,17 +5,13 @@ from apps.catalog.models import Category, Product
 
 
 def home(request):
-    categories = Category.objects.filter(is_active=True)
-    featured_products = Product.objects.filter(
-        is_active=True, is_featured=True
-    ).select_related("category")[:8]
-    if not featured_products:
-        featured_products = Product.objects.filter(
-            is_active=True
-        ).select_related("category")[:8]
+    categories = Category.objects.filter(is_active=True).order_by("display_order", "name")
+    products = Product.objects.filter(
+        is_active=True
+    ).select_related("category").prefetch_related("images").order_by("name")
     return render(
         request, "home.html",
-        {"categories": categories, "featured_products": featured_products},
+        {"categories": categories, "products": products},
     )
 
 

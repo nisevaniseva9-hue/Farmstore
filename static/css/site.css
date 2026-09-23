@@ -546,3 +546,42 @@ footer a:hover {
     }
 }
 
+/* --------------------------------------------------------------------------
+   Flipkart-Style Mobile Cart Design
+   -------------------------------------------------------------------------- */
+.cart-item-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border: 1px solid var(--farm-border) !important;
+}
+
+.cart-item-card:hover {
+    box-shadow: 0 4px 14px rgba(27, 67, 50, 0.08) !important;
+}
+
+.cart-stepper-group button {
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.cart-stepper-group .btn-qty-minus,
+.cart-stepper-group .btn-qty-plus {
+    background-color: #f1f5f2;
+    color: var(--farm-primary);
+    width: 32px;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.cart-stepper-group .btn-qty-minus:active,
+.cart-stepper-group .btn-qty-plus:active {
+    background-color: var(--farm-primary-subtle);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+

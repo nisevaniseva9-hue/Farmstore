@@ -88,19 +88,28 @@ class Product(models.Model):
 
     @property
     def primary_image(self):
+        if hasattr(self, "_prefetched_objects_cache") and "images" in self._prefetched_objects_cache:
+            for img in self.images.all():
+                if img.is_primary:
+                    return img
+            return next(iter(self.images.all()), None)
         return self.images.filter(is_primary=True).first() or self.images.first()
 
     @property
     def available_stock(self):
         """Delegates to the inventory app (Phase 3+). Returns None if the
         inventory app isn't installed yet, so templates degrade gracefully."""
+        if hasattr(self, "_cached_available_stock"):
+            return self._cached_available_stock
         from django.apps import apps as django_apps
 
         if not django_apps.is_installed("apps.inventory"):
             return None
         from apps.inventory.services import get_available_stock
 
-        return get_available_stock(self)
+        stock = get_available_stock(self)
+        self._cached_available_stock = stock
+        return stock
 
     @property
     def is_in_stock(self):

@@ -1,35 +1,128 @@
 {% extends "base.html" %}
-{% block title %}Your Cart - {{ FARM_NAME }}{% endblock %}
-{% block content %}
-<h2 class="mb-4">Your Cart</h2>
+{% block title %}Shopping Cart ({{ cart|length }}) - {{ FARM_NAME }}{% endblock %}
 
-{% if cart|length > 0 %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr></thead>
-                <tbody>
-                    {% for item in cart %}
-                        {% include "partials/cart_item.html" %}
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+<div class="cart-container pb-5" style="max-width: 1000px; margin: 0 auto; overflow-x: hidden;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 fw-bold mb-0">🛒 My Cart <span class="text-muted fw-normal fs-6">({{ cart|length }} {% if cart|length == 1 %}item{% else %}items{% endif %})</span></h1>
+        {% if cart|length > 0 %}
+            <form method="post" action="{% url 'orders:cart_clear' %}" onsubmit="return confirm('Clear all items from your cart?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link text-muted text-decoration-none btn-sm p-0">Clear Cart</button>
+            </form>
+        {% endif %}
+    </div>
+
+    {% if cart|length > 0 %}
+        <div class="row g-3 g-lg-4">
+            <!-- Left: Items list (Flipkart style card per item) -->
+            <div class="col-12 col-lg-7 col-xl-8">
+                {% for item in cart %}
+                    <div class="card mb-3 border-0 shadow-sm rounded-3 cart-item-card overflow-hidden">
+                        <div class="card-body p-3">
+                            <div class="d-flex gap-3 align-items-start">
+                                <!-- Thumbnail -->
+                                <a href="{{ item.product.get_absolute_url }}" class="flex-shrink-0">
+                                    {% if item.product.primary_image %}
+                                        <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}" class="rounded-3 object-fit-cover shadow-xs" style="width: 74px; height: 74px;">
+                                    {% else %}
+                                        <div class="rounded-3 bg-success bg-opacity-10 d-flex align-items-center justify-content-center text-success fs-3" style="width: 74px; height: 74px;">
+                                            🌱
+                                        </div>
+                                    {% endif %}
+                                </a>
+
+                                <!-- Title, Category & Price -->
+                                <div class="flex-grow-1 min-w-0">
+                                    <h6 class="mb-1 fw-bold">
+                                        <a href="{{ item.product.get_absolute_url }}" class="text-dark text-decoration-none text-truncate d-block">
+                                            {{ item.product.name }}
+                                        </a>
+                                    </h6>
+                                    <div class="small text-muted mb-1">{{ item.product.category.name }}</div>
+                                    <div class="d-flex align-items-baseline gap-2">
+                                        <span class="fs-5 fw-bold text-success" id="subtotal-{{ item.product.pk }}">₹{{ item.subtotal }}</span>
+                                        <span class="small text-muted">(₹{{ item.price }} / {{ item.product.get_unit_display }})</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-2 text-muted opacity-25">
+
+                            <!-- Stepper & Remove Actions -->
+                            <div class="d-flex justify-content-between align-items-center pt-1">
+                                <!-- Flipkart Stepper -->
+                                <form method="post" action="{% url 'orders:cart_update' item.product.pk %}" class="d-inline-flex align-items-center cart-stepper-form">
+                                    {% csrf_token %}
+                                    <span class="small text-muted me-2 d-none d-sm-inline">Quantity:</span>
+                                    <div class="input-group input-group-sm rounded-pill overflow-hidden border border-secondary border-opacity-25" style="width: 125px;">
+                                        <button type="button" class="btn btn-light px-2 border-0 btn-qty-minus fw-bold" aria-label="Decrease quantity">−</button>
+                                        <input type="number" name="quantity" value="{{ item.quantity }}" step="1"
+                                               min="{{ item.product.minimum_order_quantity }}"
+                                               {% if item.product.maximum_order_quantity %}max="{{ item.product.maximum_order_quantity }}"{% endif %}
+                                               class="form-control text-center fw-bold border-0 bg-white px-1 cart-qty-input shadow-none"
+                                               data-unit-price="{{ item.price }}" data-subtotal-target="subtotal-{{ item.product.pk }}"
+                                               style="max-width: 50px;">
+                                        <button type="button" class="btn btn-light px-2 border-0 btn-qty-plus fw-bold" aria-label="Increase quantity">+</button>
+                                    </div>
+                                </form>
+
+                                <!-- Remove Button -->
+                                <form method="post" action="{% url 'orders:cart_remove' item.product.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm text-danger text-decoration-none p-1 d-flex align-items-center gap-1 border-0 bg-transparent">
+                                        <span>🗑️</span> <span class="fw-semibold small">Remove</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="mt-3">
+                    <a href="{% url 'home' %}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        &larr; Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary -->
+            <div class="col-12 col-lg-5 col-xl-4">
+                <div class="card border-0 shadow-sm rounded-3 sticky-lg-top" style="top: 80px;">
+                    <div class="card-body p-3 p-md-4">
+                        <h6 class="fw-bold text-muted text-uppercase small mb-3">Price Details</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Price ({{ cart|length }} items)</span>
+                            <span id="cart-subtotal" class="fw-semibold">₹{{ cart.get_total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span>Delivery Charges</span>
+                            <span class="text-success fw-semibold">Calculated at checkout</span>
+                        </div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold fs-6">Total Amount</span>
+                            <span id="cart-total" class="fs-4 fw-bold text-success">₹{{ cart.get_total_price }}</span>
+                        </div>
+                        <a href="{% url 'orders:checkout' %}" class="btn btn-success w-100 py-2 py-md-3 fw-bold rounded-pill shadow-sm fs-6">
+                            Proceed to Checkout &rarr;
+                        </a>
+                        <div class="text-center mt-3 small text-muted">
+                            🛡️ Safe &amp; Secure Checkout &bull; UPI / Cash
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <form method="post" action="{% url 'orders:cart_clear' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Clear Cart</button>
-        </form>
-    </div>
-    <div class="col-md-4">
-        {% include "partials/order_summary.html" %}
-        <a href="{% url 'orders:checkout' %}" class="btn btn-success w-100 mt-3">
-            Proceed to Checkout
-        </a>
-    </div>
+    {% else %}
+        <div class="text-center py-5 bg-white rounded-3 shadow-sm border p-4">
+            <div class="display-3 mb-3">🛒</div>
+            <h2 class="h5 fw-bold text-dark mb-2">Your cart is empty</h2>
+            <p class="text-muted small mb-4">You have no fresh produce in your cart yet. Explore today's harvest!</p>
+            <a href="{% url 'home' %}" class="btn btn-success rounded-pill px-4 py-2 fw-semibold">
+                🌾 Explore Farm Produce
+            </a>
+        </div>
+    {% endif %}
 </div>
-{% else %}
-    <p class="text-muted">Your cart is empty.</p>
-    <a href="{% url 'catalog:product_list' %}" class="btn btn-success">Browse Products</a>
-{% endif %}
 {% endblock %}

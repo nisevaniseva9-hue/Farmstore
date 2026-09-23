@@ -1,42 +1,30 @@
-<footer class="mt-5">
+<footer class="mt-4 py-3 bg-dark text-white border-top border-success border-opacity-25" style="background: #152e22 !important;">
     <div class="container">
-        <div class="row g-4 mb-4">
-            <div class="col-md-5">
-                <h5 class="text-white fw-bold mb-2">🌱 {{ FARM_NAME }}</h5>
-                <p class="small text-muted mb-3" style="color: #a3b8aa !important;">{{ FARM_TAGLINE }}</p>
-                <div class="d-flex gap-3 small">
-                    <span>🚜 100% Organic</span>
-                    <span>⚡ Daily Harvest</span>
-                    <span>💬 Live WhatsApp Tracking</span>
+        <div class="row align-items-center gy-2">
+            <!-- Left: Farm info & Farmer Name -->
+            <div class="col-12 col-md-6 text-center text-md-start">
+                <div class="fw-bold fs-6 text-white mb-0">🌱 {{ FARM_NAME }}</div>
+                <div class="small text-white-50">Farmer: <strong class="text-white">Abdul Rauf</strong> &bull; Naturally fresh produce</div>
+            </div>
+
+            <!-- Right: Support & Direct Contact -->
+            <div class="col-12 col-md-6 text-center text-md-end">
+                <div class="d-inline-flex flex-wrap align-items-center justify-content-center justify-content-md-end gap-2">
+                    <span class="small text-white-50">Support:</span>
+                    <a href="tel:+918552813624" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1">
+                        📞 8552813624
+                    </a>
+                    <a href="https://wa.me/918552813624" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success rounded-pill px-3 py-1">
+                        💬 WhatsApp
+                    </a>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <h6 class="text-white fw-bold mb-2">Quick Links</h6>
-                <ul class="list-unstyled small mb-0">
-                    <li class="mb-1"><a href="{% url 'home' %}">Home</a></li>
-                    <li class="mb-1"><a href="{% url 'catalog:product_list' %}">All Produce</a></li>
-                    <li class="mb-1"><a href="{% url 'orders:cart_detail' %}">Shopping Cart</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'orders:order_list' %}">My Orders</a></li>
-                    {% else %}
-                        <li><a href="{% url 'accounts:login' %}">Customer Login</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-            <div class="col-6 col-md-4">
-                <h6 class="text-white fw-bold mb-2">Farm Support</h6>
-                <p class="small text-muted mb-2" style="color: #a3b8aa !important;">
-                    Need help with your fresh produce order or special bulk inquiries?
-                </p>
-                <p class="small text-white mb-0">
-                    📲 Instant updates delivered to your WhatsApp with every order.
-                </p>
-            </div>
         </div>
-        <hr class="border-secondary opacity-25 my-3">
-        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center small text-muted">
-            <p class="mb-1 mb-sm-0" style="color: #8fa697 !important;">&copy; {% now "Y" %} {{ FARM_NAME }}. Fresh from our soil to your family.</p>
-            <p class="mb-0" style="color: #8fa697 !important;">Quality direct-from-farmer guarantee.</p>
+
+        <hr class="border-secondary opacity-25 my-2">
+
+        <div class="text-center small text-white-50" style="font-size: 0.75rem;">
+            &copy; {% now "Y" %} {{ FARM_NAME }} &bull; Direct from Farmer Abdul Rauf (8552813624)
         </div>
     </div>
 </footer>
