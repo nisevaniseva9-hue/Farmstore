@@ -6,10 +6,14 @@ from .models import Address, CustomerProfile, User
 
 @admin.register(User)
 class FarmUserAdmin(UserAdmin):
-    list_display = ("username", "email", "first_name", "last_name", "role", "is_active")
+    list_display = ("username", "mobile_number", "email", "first_name", "last_name", "role", "is_staff", "is_active")
     list_filter = ("role", "is_active", "is_staff")
+    search_fields = ("username", "mobile_number", "first_name", "last_name", "email")
     fieldsets = UserAdmin.fieldsets + (
-        ("Role", {"fields": ("role",)}),
+        ("Admin Contact & Role", {"fields": ("role", "mobile_number")}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ("Admin Contact & Role", {"fields": ("role", "mobile_number")}),
     )
 
 

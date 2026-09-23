@@ -16,16 +16,29 @@ class Command(BaseCommand):
 
         admin_phone = config("ADMIN_PHONE", default="9325780114").strip()
         admin_password = config("ADMIN_PASSWORD", default="Farmer@18").strip()
+        admin_username = config("ADMIN_USERNAME", default="admin").strip()
 
-        # 1. Create or update Farmer Admin account
-        user, created = User.objects.get_or_create(username=admin_phone)
+        # 1. Create or update primary Farmer Admin account (username="admin", mobile="9325780114")
+        user, created = User.objects.get_or_create(username=admin_username)
         user.role = User.Role.FARMER
         user.is_staff = True
         user.is_superuser = True
         user.first_name = "Abdul"
         user.last_name = "Rauf"
+        user.mobile_number = admin_phone
         user.set_password(admin_password)
         user.save()
+
+        # Also ensure legacy user with username=admin_phone has mobile_number set
+        if admin_phone != admin_username:
+            phone_user = User.objects.filter(username=admin_phone).first()
+            if phone_user:
+                phone_user.mobile_number = admin_phone
+                phone_user.role = User.Role.FARMER
+                phone_user.is_staff = True
+                phone_user.is_superuser = True
+                phone_user.set_password(admin_password)
+                phone_user.save()
 
         profile, _ = CustomerProfile.objects.get_or_create(user=user)
         profile.phone_number = admin_phone

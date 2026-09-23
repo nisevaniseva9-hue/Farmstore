@@ -5,16 +5,15 @@
 <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-5">
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
-            <div class="card-header bg-success text-white text-center py-3">
-                <h4 class="mb-0 fw-bold">🌱 Customer Login</h4>
-                <div class="small opacity-75">Sign in to Farm Fresh with your Mobile Number</div>
+            <div class="card-header bg-success text-white text-center py-3" id="login-card-header">
+                <h4 class="mb-0 fw-bold" id="login-title">🌱 Customer Login</h4>
+                <div class="small opacity-75" id="login-subtitle">Sign in to Farm Fresh with your Mobile Number</div>
             </div>
 
             <div class="card-body p-4">
                 <form method="post" novalidate id="login-form">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ next|default:'' }}">
-
 
                     <!-- Non-field error display -->
                     {% if form.non_field_errors %}
@@ -25,24 +24,24 @@
                         </div>
                     {% endif %}
 
-                    <!-- Mobile Number field -->
+                    <!-- Username / Mobile Number field -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark" for="id_username">
+                        <label class="form-label fw-bold text-dark" for="id_username" id="username-label">
                             📱 Mobile Number
                         </label>
                         {{ form.username }}
                         {% for error in form.username.errors %}
                             <div class="text-danger small mt-1">{{ error }}</div>
                         {% endfor %}
-                        <div class="form-text small text-muted">
+                        <div class="form-text small text-muted" id="username-help">
                             Customers log in instantly with 1 tap. No password needed!
                         </div>
                     </div>
 
-                    <!-- Admin password field (Collapsible / Revealed for farmer/admin) -->
-                    <div class="mb-3" id="admin-password-group" style="{% if form.password.errors or 'password' in form.errors or 'Administrator' in form.non_field_errors.as_text %}display:block;{% else %}display:none;{% endif %}">
-                        <label class="form-label fw-bold text-dark" for="id_password">
-                            🔒 Farmer / Admin Password
+                    <!-- Password field (Revealed in admin mode) -->
+                    <div class="mb-3" id="admin-password-group" style="{% if form.password.errors or 'password' in form.errors or 'Administrator' in form.non_field_errors.as_text or request.GET.admin %}display:block;{% else %}display:none;{% endif %}">
+                        <label class="form-label fw-bold text-dark" for="id_password" id="password-label">
+                            🔒 Password
                         </label>
                         {{ form.password }}
                         {% for error in form.password.errors %}
@@ -51,13 +50,13 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm mb-3">
+                    <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm mb-3" id="login-submit-btn">
                         🚀 Continue to Store
                     </button>
 
-                    <!-- Toggle Admin Password Option -->
+                    <!-- Toggle Admin Login Option -->
                     <div class="text-center mb-3">
-                        <button type="button" class="btn btn-link btn-sm text-muted text-decoration-none" onclick="toggleAdminPassword()" id="admin-toggle-btn">
+                        <button type="button" class="btn btn-link btn-sm text-muted text-decoration-none" onclick="toggleAdminMode()" id="admin-toggle-btn">
                             ⚙️ Farmer / Admin Login
                         </button>
                     </div>
@@ -78,17 +77,62 @@
 </div>
 
 <script>
-function toggleAdminPassword() {
-    const group = document.getElementById("admin-password-group");
-    const btn = document.getElementById("admin-toggle-btn");
-    if (group.style.display === "none") {
-        group.style.display = "block";
-        btn.innerText = "✕ Hide Admin Password Field";
-        document.getElementById("id_password").focus();
+let isAdminMode = false;
+
+function setAdminMode(enableAdmin) {
+    isAdminMode = enableAdmin;
+    const title = document.getElementById("login-title");
+    const subtitle = document.getElementById("login-subtitle");
+    const userLabel = document.getElementById("username-label");
+    const userInput = document.getElementById("id_username");
+    const userHelp = document.getElementById("username-help");
+    const passGroup = document.getElementById("admin-password-group");
+    const passInput = document.getElementById("id_password");
+    const submitBtn = document.getElementById("login-submit-btn");
+    const toggleBtn = document.getElementById("admin-toggle-btn");
+
+    if (enableAdmin) {
+        title.innerText = "⚙️ Farmer / Admin Login";
+        subtitle.innerText = "Sign in with your Admin Username or Mobile Number";
+        userLabel.innerHTML = "👤 Username <span class=\"text-muted fw-normal small\">(or Mobile Number)</span>";
+        userInput.placeholder = "Enter Admin Username or Mobile Number";
+        userHelp.innerText = "Admins can log in with their username or registered mobile number.";
+        passGroup.style.display = "block";
+        if (passInput) passInput.placeholder = "Enter Admin Password";
+        submitBtn.innerHTML = "🔐 Sign In as Administrator";
+        toggleBtn.innerText = "← Switch to Customer Mobile Login";
     } else {
-        group.style.display = "none";
-        btn.innerText = "⚙️ Farmer / Admin Login";
+        title.innerText = "🌱 Customer Login";
+        subtitle.innerText = "Sign in to Farm Fresh with your Mobile Number";
+        userLabel.innerHTML = "📱 Mobile Number";
+        userInput.placeholder = "Enter 10-digit mobile number";
+        userHelp.innerText = "Customers log in instantly with 1 tap. No password needed!";
+        passGroup.style.display = "none";
+        submitBtn.innerHTML = "🚀 Continue to Store";
+        toggleBtn.innerText = "⚙️ Farmer / Admin Login";
     }
 }
+
+function toggleAdminMode() {
+    setAdminMode(!isAdminMode);
+    if (isAdminMode) {
+        const pass = document.getElementById("id_password");
+        if (pass) pass.focus();
+    } else {
+        const user = document.getElementById("id_username");
+        if (user) user.focus();
+    }
+}
+
+// Auto-activate admin mode if errors occurred on password or if ?admin=1 is in URL
+document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAdminParam = urlParams.get("admin") === "1" || urlParams.get("admin") === "true";
+    const hasAdminErrors = document.getElementById("admin-password-group").style.display === "block";
+
+    if (hasAdminParam || hasAdminErrors) {
+        setAdminMode(true);
+    }
+});
 </script>
 {% endblock %}

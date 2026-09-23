@@ -10,6 +10,12 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
+phone_validator = RegexValidator(
+    regex=r"^\+?[0-9]{10,15}$",
+    message="Enter a valid phone number (10-15 digits, optional leading +).",
+)
+
+
 class User(AbstractUser):
     """Custom user so we can cleanly add a role without a fragile
     is_staff/is_superuser-only distinction, and so future custom
@@ -20,6 +26,14 @@ class User(AbstractUser):
         FARMER = "farmer", "Farmer/Admin"
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
+    mobile_number = models.CharField(
+        max_length=16,
+        validators=[phone_validator],
+        blank=True,
+        default="",
+        verbose_name="Admin Mobile Number",
+        help_text="Mobile number for Farmer / Admin login and WhatsApp alerts.",
+    )
 
     def __str__(self):
         return self.get_full_name() or self.username
@@ -27,12 +41,6 @@ class User(AbstractUser):
     @property
     def is_farmer(self):
         return self.role == self.Role.FARMER or self.is_superuser
-
-
-phone_validator = RegexValidator(
-    regex=r"^\+?[0-9]{10,15}$",
-    message="Enter a valid phone number (10-15 digits, optional leading +).",
-)
 
 
 class CustomerProfile(models.Model):

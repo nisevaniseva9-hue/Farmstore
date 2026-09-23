@@ -291,12 +291,14 @@ class PhoneOrUsernameAuthenticationForm(forms.Form):
 
         target_user = User.objects.filter(username=username).first()
         if not target_user:
+            target_user = User.objects.filter(mobile_number=username).first()
+        if not target_user:
             profile = CustomerProfile.objects.filter(phone_number=username).first()
             if profile:
                 target_user = profile.user
 
         if not target_user:
-            raise ValidationError("No account found with this mobile number. Please register below in 5 seconds!")
+            raise ValidationError("No account found with this username or mobile number. Please check and try again!")
 
         # Farmer / Admin accounts MUST authenticate with password
         if target_user.is_farmer:

@@ -18,25 +18,43 @@ class PhoneNumberBackend(ModelBackend):
     def authenticate(self, request, username=None, password=None, mobile_only=False, **kwargs):
         if not username:
             return None
-        # Clean phone number (strip whitespace, etc.)
-        username = str(username).strip()
+
+        from .models import CustomerProfile
+
+        clean_id = str(username).strip().replace(" ", "").replace("-", "")
         user = None
-        try:
-            user = User.objects.get(
-                role=User.Role.CUSTOMER, customer_profile__phone_number=username
-            )
-        except (User.DoesNotExist, User.MultipleObjectsReturned):
-            try:
-                user = User.objects.get(role=User.Role.CUSTOMER, username=username)
-            except Exception:
-                return None
+
+        # 1. Try finding by User.mobile_number (e.g. Admin or Customer mobile)
+        if clean_id:
+            user = User.objects.filter(mobile_number=clean_id).first()
+
+        # 2. Try finding by CustomerProfile.phone_number
+        if not user and clean_id:
+            profile = CustomerProfile.objects.filter(phone_number=clean_id).first()
+            if profile:
+                user = profile.user
+
+        # 3. Try finding by standard User.username (alphanumeric username or phone)
+        if not user:
+            user = User.objects.filter(username=clean_id).first()
 
         if not user or not self.user_can_authenticate(user):
             return None
 
+        # Farmer / Admin accounts MUST authenticate with password
+        if user.is_farmer:
+            if password and user.check_password(password):
+                return user
+            return None
+
+        # Customer account:
         if mobile_only:
             return user
 
-        if password and user.check_password(password):
-            return user
-        return None
+        if password:
+            if user.check_password(password):
+                return user
+            return None
+
+        # Customer without password (instant 1-tap mobile login)
+        return user

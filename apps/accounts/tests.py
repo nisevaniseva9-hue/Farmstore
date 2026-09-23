@@ -104,6 +104,37 @@ class PhoneLoginTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_farmer_can_login_with_mobile_number_and_password(self):
+        User.objects.create_user(
+            username="mainadmin",
+            mobile_number="9325780114",
+            password="AdminPass!123",
+            role=User.Role.FARMER,
+            is_staff=True,
+        )
+        # Login with mobile number and password
+        response = self.client.post(
+            reverse("accounts:login"),
+            {"username": "9325780114", "password": "AdminPass!123"},
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_farmer_mobile_login_requires_password(self):
+        User.objects.create_user(
+            username="mainadmin2",
+            mobile_number="9325780115",
+            password="AdminPass!123",
+            role=User.Role.FARMER,
+            is_staff=True,
+        )
+        # Attempting mobile login without password must fail for farmer
+        response = self.client.post(
+            reverse("accounts:login"),
+            {"username": "9325780115"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Administrator login requires a password")
+
 
 class RoleAndAuthorizationTests(TestCase):
     def setUp(self):
@@ -306,5 +337,20 @@ class FrictionlessAuthAndSimplifiedAddressTests(TestCase):
         self.assertEqual(address.landmark, "Kondhwa, Opposite to Talab Factory")
         self.assertEqual(address.city, "Pune")
         self.assertEqual(address.postal_code, "411048")
+
+    def test_admin_user_table_displays_mobile_number(self):
+        User.objects.create_superuser(
+            username="superfarmer",
+            mobile_number="9988776655",
+            password="SuperPass!123",
+            email="farmer@example.com",
+            role=User.Role.FARMER,
+        )
+        self.client.login(username="superfarmer", password="SuperPass!123")
+        response = self.client.get(reverse("admin:accounts_user_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "9988776655")
+        self.assertContains(response, "Admin Mobile Number")
+
 
 
