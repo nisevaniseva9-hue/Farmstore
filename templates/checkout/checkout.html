@@ -9,8 +9,7 @@
 
             <h5>Delivery Address</h5>
             {{ form.address }}
-            {% for error in form.address.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
-            <p class="mb-4 mt-2"><a href="{% url 'accounts:address_create' %}">+ Add a new address</a></p>
+            <p class="mb-4 mt-2"><a href="{% url 'accounts:address_create' %}?next={% url 'orders:checkout' %}" class="fw-semibold text-success">+ Add a new address</a></p>
 
             <h5>Payment Method</h5>
             {% for error in form.payment_method.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}

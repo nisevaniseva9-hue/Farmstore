@@ -1,27 +1,99 @@
 {% extends "base.html" %}
-{% block title %}Address - {{ FARM_NAME }}{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit{% else %}Add Delivery{% endif %} Address - {{ FARM_NAME }}{% endblock %}
+
 {% block content %}
-<h2 class="mb-4">{% if form.instance.pk %}Edit{% else %}Add{% endif %} Address</h2>
-<div class="row">
-    <div class="col-md-6">
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="mb-3 {% if field.name == 'is_default' %}form-check{% endif %}">
-                    {% if field.name == 'is_default' %}
-                        {{ field }}
-                        <label class="form-check-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                    {% else %}
-                        <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                        {{ field }}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0 fw-bold">📍 {% if form.instance.pk %}Edit Delivery Address{% else %}Add Delivery Address{% endif %}</h4>
+                <div class="small opacity-75">Please enter your delivery location for fresh farm delivery</div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+                    <!-- 5 Simple Address Fields Requested by User -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark" for="{{ form.building_name.id_for_label }}">
+                            🏢 Building Name / Society <span class="text-danger">*</span>
+                        </label>
+                        {{ form.building_name }}
+                        {% for error in form.building_name.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark" for="{{ form.flat_wing.id_for_label }}">
+                            🚪 Flat No and Wing <span class="text-danger">*</span>
+                        </label>
+                        {{ form.flat_wing }}
+                        {% for error in form.flat_wing.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark" for="{{ form.area_locality.id_for_label }}">
+                            🗺️ Area or Locality <span class="text-danger">*</span>
+                        </label>
+                        {{ form.area_locality }}
+                        {% for error in form.area_locality.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-7 mb-3">
+                            <label class="form-label fw-bold text-dark" for="{{ form.city.id_for_label }}">
+                                🏙️ City <span class="text-danger">*</span>
+                            </label>
+                            {{ form.city }}
+                            {% for error in form.city.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-sm-5 mb-3">
+                            <label class="form-label fw-bold text-dark" for="{{ form.postal_code.id_for_label }}">
+                                📮 Pincode <span class="text-danger">*</span>
+                            </label>
+                            {{ form.postal_code }}
+                            {% for error in form.postal_code.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3 mt-2 mb-3">
+                        <div class="small fw-bold text-muted mb-2">👤 Receiver Contact Details (Optional)</div>
+                        <div class="row">
+                            <div class="col-sm-6 mb-2">
+                                <label class="form-label small text-muted mb-1" for="{{ form.full_name.id_for_label }}">Contact Name</label>
+                                {{ form.full_name }}
+                            </div>
+                            <div class="col-sm-6 mb-2">
+                                <label class="form-label small text-muted mb-1" for="{{ form.phone_number.id_for_label }}">Contact Mobile</label>
+                                {{ form.phone_number }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm">
+                        💾 Save Address & Continue
+                    </button>
+
+                    {% if next %}
+                        <a href="{{ next }}" class="btn btn-link w-100 text-muted mt-2 text-decoration-none small">
+                            ← Return to Checkout
+                        </a>
                     {% endif %}
-                    {% for error in field.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-success">Save Address</button>
-        </form>
+
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

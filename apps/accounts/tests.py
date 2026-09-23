@@ -200,3 +200,75 @@ class HomePageTests(TestCase):
         response = self.client.get(reverse("health_check"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"OK")
+
+
+class FrictionlessAuthAndSimplifiedAddressTests(TestCase):
+    def test_customer_registration_without_password(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {
+                "first_name": "Rohan",
+                "phone_number": "9822001122",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        user = User.objects.get(username="9822001122")
+        self.assertEqual(user.first_name, "Rohan")
+        self.assertEqual(user.role, User.Role.CUSTOMER)
+        self.assertFalse(user.has_usable_password())
+
+    def test_customer_login_without_password(self):
+        user = User.objects.create_user(
+            username="9822334455",
+            first_name="Pooja",
+            role=User.Role.CUSTOMER,
+        )
+        user.set_unusable_password()
+        user.save()
+        CustomerProfile.objects.create(user=user, phone_number="9822334455")
+
+        response = self.client.post(
+            reverse("accounts:login"),
+            {"username": "9822334455"},
+        )
+        self.assertEqual(response.status_code, 302)
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Pooja")
+
+    def test_simplified_5_field_address_with_next_redirect(self):
+        user = User.objects.create_user(
+            username="9822556677",
+            first_name="Amit",
+            role=User.Role.CUSTOMER,
+        )
+        user.set_unusable_password()
+        user.save()
+        CustomerProfile.objects.create(user=user, phone_number="9822556677")
+        self.client.force_login(user)
+
+        checkout_url = reverse("orders:checkout")
+        response = self.client.post(
+            f"{reverse('accounts:address_create')}?next={checkout_url}",
+            {
+                "building_name": "Gokuldham Society",
+                "flat_wing": "Flat 302, B Wing",
+                "area_locality": "Powai",
+                "city": "Mumbai",
+                "postal_code": "400076",
+                "next": checkout_url,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, checkout_url)
+
+        address = Address.objects.filter(customer=user).first()
+        self.assertIsNotNone(address)
+        self.assertEqual(address.line1, "Flat 302, B Wing")
+        self.assertEqual(address.line2, "Gokuldham Society")
+        self.assertEqual(address.landmark, "Powai")
+        self.assertEqual(address.city, "Mumbai")
+        self.assertEqual(address.postal_code, "400076")
+        self.assertEqual(address.full_name, "Amit")
+        self.assertEqual(address.phone_number, "9822556677")
+

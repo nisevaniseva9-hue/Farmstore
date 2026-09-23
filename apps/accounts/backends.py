@@ -15,15 +15,28 @@ User = get_user_model()
 
 
 class PhoneNumberBackend(ModelBackend):
-    def authenticate(self, request, username=None, password=None, **kwargs):
-        if not username or not password:
+    def authenticate(self, request, username=None, password=None, mobile_only=False, **kwargs):
+        if not username:
             return None
+        # Clean phone number (strip whitespace, etc.)
+        username = str(username).strip()
+        user = None
         try:
             user = User.objects.get(
                 role=User.Role.CUSTOMER, customer_profile__phone_number=username
             )
-        except User.DoesNotExist:
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            try:
+                user = User.objects.get(role=User.Role.CUSTOMER, username=username)
+            except Exception:
+                return None
+
+        if not user or not self.user_can_authenticate(user):
             return None
-        if user.check_password(password) and self.user_can_authenticate(user):
+
+        if mobile_only:
+            return user
+
+        if password and user.check_password(password):
             return user
         return None

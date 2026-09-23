@@ -1,24 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Register - {{ FARM_NAME }}{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-4">Create an account</h2>
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% for error in field.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                    {% endfor %}
-                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-success w-100">Register</button>
-        </form>
-        <p class="mt-3">Already have an account? <a href="{% url 'accounts:login' %}">Login here</a></p>
+    <div class="col-12 col-md-8 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-success text-white text-center py-3">
+                <h4 class="mb-0 fw-bold">✨ Quick Registration</h4>
+                <div class="small opacity-75">No passwords required! Sign up in 5 seconds</div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger py-2 small mb-3">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark" for="{{ form.first_name.id_for_label }}">
+                            👤 Your Name <span class="text-danger">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark" for="{{ form.phone_number.id_for_label }}">
+                            📱 Mobile Number <span class="text-danger">*</span>
+                        </label>
+                        {{ form.phone_number }}
+                        {% for error in form.phone_number.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text small text-muted">
+                            Used to confirm your orders and delivery tracking.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small" for="{{ form.last_name.id_for_label }}">
+                            Surname / Last Name (Optional)
+                        </label>
+                        {{ form.last_name }}
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm mb-3">
+                        🌱 Start Shopping
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0 text-muted small">Already have an account?</p>
+                        <a href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="fw-bold text-success text-decoration-none">
+                            ← Login directly with your Mobile Number
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

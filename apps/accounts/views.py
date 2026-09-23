@@ -13,6 +13,11 @@ class FarmLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = PhoneOrUsernameAuthenticationForm
 
+    def form_valid(self, form):
+        user = form.get_user()
+        login(self.request, user, backend="apps.accounts.backends.PhoneNumberBackend")
+        return redirect(self.get_success_url())
+
 
 class FarmLogoutView(LogoutView):
     next_page = "home"
@@ -22,16 +27,19 @@ def register(request):
     if request.user.is_authenticated:
         return redirect("home")
 
+    next_url = request.POST.get("next") or request.GET.get("next")
     if request.method == "POST":
         form = CustomerRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user, backend="apps.accounts.backends.PhoneNumberBackend")
-            messages.success(request, "Welcome! Your account has been created.")
+            messages.success(request, f"Welcome to Farm Fresh, {user.first_name}!")
+            if next_url:
+                return redirect(next_url)
             return redirect("home")
     else:
         form = CustomerRegistrationForm()
-    return render(request, "accounts/register.html", {"form": form})
+    return render(request, "accounts/register.html", {"form": form, "next": next_url})
 
 
 @login_required
@@ -60,31 +68,37 @@ def address_list(request):
 
 @login_required
 def address_create(request):
+    next_url = request.POST.get("next") or request.GET.get("next")
     if request.method == "POST":
-        form = AddressForm(request.POST)
+        form = AddressForm(request.POST, user=request.user)
         if form.is_valid():
             address = form.save(commit=False)
             address.customer = request.user
             address.save()
-            messages.success(request, "Address added.")
+            messages.success(request, "Address saved successfully.")
+            if next_url:
+                return redirect(next_url)
             return redirect("accounts:address_list")
     else:
-        form = AddressForm()
-    return render(request, "accounts/address_form.html", {"form": form})
+        form = AddressForm(user=request.user)
+    return render(request, "accounts/address_form.html", {"form": form, "next": next_url})
 
 
 @login_required
 def address_edit(request, pk):
     address = get_object_or_404(Address, pk=pk, customer=request.user)
+    next_url = request.POST.get("next") or request.GET.get("next")
     if request.method == "POST":
-        form = AddressForm(request.POST, instance=address)
+        form = AddressForm(request.POST, instance=address, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Address updated.")
+            if next_url:
+                return redirect(next_url)
             return redirect("accounts:address_list")
     else:
-        form = AddressForm(instance=address)
-    return render(request, "accounts/address_form.html", {"form": form})
+        form = AddressForm(instance=address, user=request.user)
+    return render(request, "accounts/address_form.html", {"form": form, "next": next_url})
 
 
 @login_required

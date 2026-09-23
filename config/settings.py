@@ -166,12 +166,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-]
+# Frictionless authentication: no complex password rules
+AUTH_PASSWORD_VALIDATORS = []
+
 
 LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "home"
@@ -221,10 +218,15 @@ CACHES = {
 # Security hardening (mostly relevant once DEBUG=False in production)
 # --------------------------------------------------------------------------
 CSRF_COOKIE_HTTPONLY = True
+# Permanent login: session cookie lasts 10 years, refreshes on every visit, persists on browser restart
+SESSION_COOKIE_AGE = 315360000  # 10 years in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_REFERRER_POLICY = "same-origin"
+
 
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",

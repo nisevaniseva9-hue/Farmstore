@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
+
 
 from apps.catalog.models import Product
 
@@ -76,8 +78,9 @@ def checkout(request):
         return redirect("orders:cart_detail")
 
     if not request.user.addresses.exists():
-        messages.info(request, "Please add a delivery address before checking out.")
-        return redirect("accounts:address_create")
+        messages.info(request, "Please enter your delivery address to proceed with your order.")
+        return redirect(f"{reverse('accounts:address_create')}?next={reverse('orders:checkout')}")
+
 
     if request.method == "POST":
         form = CheckoutForm(request.POST, user=request.user)
