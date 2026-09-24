@@ -6,6 +6,7 @@ app_name = "payments"
 
 urlpatterns = [
     path("pay/upi/<str:order_number>/", views.pay_upi, name="pay_upi"),
+    path("pay/upi/<str:order_number>/switch-cod/", views.switch_to_cod, name="switch_to_cod"),
 ]
 
 farmer_urlpatterns = [

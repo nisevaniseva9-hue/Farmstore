@@ -179,6 +179,39 @@ class CustomerUpiFlowViewTests(TestCase):
         response = self.client.get(reverse("payments:pay_upi", args=[order.order_number]))
         self.assertEqual(response.status_code, 404)
 
+    def test_switch_to_cod_updates_payment_method(self):
+        cart = make_cart()
+        cart.add(self.product, Decimal("1"))
+        order = create_order_from_cart(
+            customer=self.customer, cart=cart, address=self.address,
+            payment_method=Order.PaymentMethod.UPI,
+        )
+        self.client.login(username="c_upi", password="pw12345!")
+        response = self.client.get(reverse("payments:switch_to_cod", args=[order.order_number]))
+        self.assertRedirects(response, reverse("orders:order_detail", args=[order.order_number]))
+        order.refresh_from_db()
+        self.assertEqual(order.payment_method, Order.PaymentMethod.COD)
+
+    def test_pay_upi_template_has_no_dangerous_script_redirects(self):
+        s = PaymentSettings.get_settings()
+        s.upi_id = "test@upi"
+        s.upi_display_name = "Farmer Abdul"
+        s.save()
+        cart = make_cart()
+        cart.add(self.product, Decimal("1"))
+        order = create_order_from_cart(
+            customer=self.customer, cart=cart, address=self.address,
+            payment_method=Order.PaymentMethod.UPI,
+        )
+        self.client.login(username="c_upi", password="pw12345!")
+        response = self.client.get(reverse("payments:pay_upi", args=[order.order_number]))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertNotIn("openUpiApp", content)
+        self.assertNotIn("phonepe://", content)
+        self.assertIn("Method 2: Pay to UPI ID", content)
+        self.assertIn("Switch to COD", content)
+
 
 class FarmerPaymentManagementTests(TestCase):
     def setUp(self):

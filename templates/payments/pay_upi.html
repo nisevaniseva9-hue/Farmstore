@@ -11,65 +11,70 @@
             </div>
 
             <div class="card-body p-4 text-center">
-                {% if settings.upi_id %}
-                    <!-- 1-Tap Mobile UPI Payment Section -->
+                <!-- Method 1: QR Code (Most reliable across all banks and apps) -->
+                {% if settings.qr_code_image %}
                     <div class="p-3 bg-light rounded-3 border mb-3">
-                        <div class="fw-bold text-success mb-2 fs-6">📱 Mobile 1-Tap Payment</div>
-                        <a href="upi://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&mc=0000&mode=02&purpose=00&am={{ order.total }}&cu=INR&tn=FarmFreshOrder{{ order.id }}" 
-                           class="btn btn-success btn-lg w-100 py-2 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 mb-2">
-                            <span>⚡ Pay ₹{{ order.total }} via UPI</span>
-                        </a>
-                        <div class="small text-muted mb-2">Tap above to pay via any UPI app, or pick your app below:</div>
-                        
-                        <!-- Dedicated App Buttons -->
-                        <div class="d-flex gap-2 justify-content-center">
-                            <button type="button" onclick="openUpiApp('gpay')" 
-                               class="btn btn-outline-dark btn-sm flex-fill fw-semibold py-2">
-                                🟢 Google Pay
-                            </button>
-                            <button type="button" onclick="openUpiApp('phonepe')" 
-                               class="btn btn-outline-primary btn-sm flex-fill fw-semibold py-2">
-                                🟣 PhonePe
-                            </button>
-                            <button type="button" onclick="openUpiApp('paytm')" 
-                               class="btn btn-outline-info btn-sm flex-fill fw-semibold py-2">
-                                🔵 Paytm
-                            </button>
+                        <div class="fw-bold text-success mb-1 fs-6">📷 Method 1: Scan QR Code (Recommended)</div>
+                        <div class="small text-muted mb-2">Scan with PhonePe, Google Pay, Paytm, or any UPI app:</div>
+                        <div class="bg-white p-2 d-inline-block rounded-3 border shadow-sm mb-2">
+                            <img src="{{ settings.qr_code_image.url }}" alt="UPI QR Code" class="img-fluid" style="max-height: 220px; max-width: 220px;">
+                        </div>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="{{ settings.qr_code_image.url }}" download="FarmFresh_UPI_QR.png" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-3">
+                                📥 Save / View QR Image
+                            </a>
+                        </div>
+                        <div class="small text-muted mt-2" style="font-size: 0.8rem;">
+                            💡 <em>On mobile?</em> Save the QR image above, open PhonePe or GPay, tap Scanner and choose the QR from your gallery!
                         </div>
                     </div>
                 {% endif %}
 
-                <!-- QR Code Display (for scanning or desktop) -->
-                <div class="my-3">
-                    {% if settings.qr_code_image %}
-                        <div class="small text-muted mb-2">Or Scan QR Code to Pay:</div>
-                        <img src="{{ settings.qr_code_image.url }}" alt="UPI QR Code" class="img-fluid rounded-3 border p-2 shadow-xs mb-2" style="max-height: 220px;">
-                    {% else %}
-                        <div class="alert alert-secondary py-2 small">
-                            QR Code not uploaded yet. Use the UPI ID below to pay.
+                <!-- Method 2: Copy UPI ID -->
+                {% if settings.upi_id %}
+                    <div class="bg-light p-3 rounded-3 border text-start mb-3">
+                        <div class="fw-bold text-dark mb-1 fs-6">📋 Method 2: Pay to UPI ID</div>
+                        <div class="small text-muted mb-2">Copy this UPI ID and paste it in PhonePe / Google Pay / Paytm:</div>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control font-monospace fw-bold bg-white" id="upi-id-input" value="{{ settings.upi_id }}" readonly>
+                            <button type="button" class="btn btn-success fw-semibold" id="copy-upi-btn" onclick="copyUpiId()">
+                                📋 Copy
+                            </button>
                         </div>
-                    {% endif %}
-                </div>
-
-                <!-- UPI ID & Details -->
-                <div class="bg-light p-3 rounded-3 border text-start mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="small text-muted">UPI ID:</span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" id="copy-upi-btn" onclick="copyUpiId()">
-                            📋 Copy
-                        </button>
+                        {% if settings.upi_display_name %}
+                            <div class="small text-muted"><strong>Payee Name:</strong> {{ settings.upi_display_name }}</div>
+                        {% endif %}
+                        <div class="small text-muted"><strong>Amount:</strong> ₹{{ order.total }}</div>
                     </div>
-                    <div class="fw-bold fs-6 text-dark" id="upi-id-text">{{ settings.upi_id|default:"Not configured" }}</div>
-                    {% if settings.upi_display_name %}
-                        <div class="small text-muted">Payee: {{ settings.upi_display_name }}</div>
-                    {% endif %}
+
+                    <!-- Method 3: Direct App Link (Standard HTML link, zero script redirects) -->
+                    <div class="mb-3">
+                        <a href="upi://pay?pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&am={{ order.total }}&cu=INR&tn=FarmFreshOrder{{ order.id }}" 
+                           class="btn btn-outline-success w-100 py-2 fw-semibold shadow-xs">
+                            ⚡ Tap to Pay ₹{{ order.total }} via UPI App
+                        </a>
+                        <div class="small text-muted mt-1" style="font-size: 0.78rem;">
+                            <em>Note: If your bank app declines web links due to bank security, please use Method 1 (QR Code) or Method 2 (UPI ID) above.</em>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Switch to Cash on Delivery Option -->
+                <div class="alert alert-secondary py-2 px-3 small d-flex justify-content-between align-items-center mb-3 text-start">
+                    <div>
+                        <div class="fw-semibold text-dark">Prefer Cash on Delivery?</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">Pay ₹{{ order.total }} in cash when delivered.</div>
+                    </div>
+                    <a href="{% url 'payments:switch_to_cod' order.order_number %}" class="btn btn-outline-dark btn-sm fw-semibold">
+                        💵 Switch to COD
+                    </a>
                 </div>
 
                 <hr class="my-3">
 
-                <!-- Payment Confirmation Form -->
+                <!-- Step 2: Payment Confirmation Form -->
                 <div class="text-start">
-                    <h6 class="fw-bold mb-2">Step 2: Confirm Your Payment</h6>
+                    <h6 class="fw-bold mb-1">Step 2: Confirm Your Payment</h6>
                     <p class="small text-muted mb-2">
                         After completing the payment in your UPI app, enter the 12-digit UPI Reference Number (UTR) below:
                     </p>
@@ -96,48 +101,28 @@
 </div>
 
 <script>
-function openUpiApp(target) {
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const upiParams = "pa={{ settings.upi_id }}&pn={{ settings.upi_display_name|default:FARM_NAME|urlencode }}&mc=0000&mode=02&purpose=00&am={{ order.total }}&cu=INR&tn=FarmFreshOrder{{ order.id }}";
-    
-    if (target === 'phonepe') {
-        window.location.href = "phonepe://pay?" + upiParams;
-        setTimeout(function() {
-            window.location.href = "upi://pay?" + upiParams;
-        }, 1200);
-    } else if (target === 'gpay') {
-        if (isAndroid) {
-            window.location.href = "intent://pay?" + upiParams + "#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end";
-        } else {
-            window.location.href = "gpay://upi/pay?" + upiParams;
-        }
-        setTimeout(function() {
-            window.location.href = "upi://pay?" + upiParams;
-        }, 1200);
-    } else if (target === 'paytm') {
-        window.location.href = "paytmmp://pay?" + upiParams;
-        setTimeout(function() {
-            window.location.href = "upi://pay?" + upiParams;
-        }, 1200);
-    } else {
-        window.location.href = "upi://pay?" + upiParams;
-    }
-}
-
 function copyUpiId() {
-    const upiText = document.getElementById("upi-id-text").innerText.trim();
-    if (upiText && upiText !== "Not configured") {
-        navigator.clipboard.writeText(upiText).then(() => {
+    const input = document.getElementById("upi-id-input");
+    if (input && input.value) {
+        navigator.clipboard.writeText(input.value.trim()).then(() => {
             const btn = document.getElementById("copy-upi-btn");
             const oldText = btn.innerText;
             btn.innerText = "✓ Copied!";
-            btn.classList.replace("btn-outline-secondary", "btn-success");
+            btn.classList.replace("btn-success", "btn-dark");
             setTimeout(() => {
                 btn.innerText = oldText;
-                btn.classList.replace("btn-success", "btn-outline-secondary");
+                btn.classList.replace("btn-dark", "btn-success");
             }, 2000);
+        }).catch(() => {
+            // Fallback for older browsers
+            input.select();
+            document.execCommand("copy");
+            const btn = document.getElementById("copy-upi-btn");
+            btn.innerText = "✓ Copied!";
+            setTimeout(() => { btn.innerText = "📋 Copy"; }, 2000);
         });
     }
 }
 </script>
 {% endblock %}
+

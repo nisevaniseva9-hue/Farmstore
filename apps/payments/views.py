@@ -60,6 +60,25 @@ def pay_upi(request, order_number):
     )
 
 
+@login_required
+def switch_to_cod(request, order_number):
+    order = get_object_or_404(
+        Order, order_number=order_number, customer=request.user,
+        payment_method=Order.PaymentMethod.UPI,
+    )
+    if order.payment_status == Order.PaymentStatus.PENDING:
+        order.payment_method = Order.PaymentMethod.COD
+        order.save(update_fields=["payment_method"])
+        messages.success(
+            request,
+            f"Order {order.order_number} has been switched to Cash on Delivery. "
+            f"You can pay ₹{order.total} when your order arrives.",
+        )
+        return redirect("orders:order_detail", order_number=order.order_number)
+    messages.error(request, "This order cannot be switched to Cash on Delivery.")
+    return redirect("orders:order_detail", order_number=order.order_number)
+
+
 # ---------------------------------------------------------------------------
 # Farmer-only: settings + manual verification
 # ---------------------------------------------------------------------------
