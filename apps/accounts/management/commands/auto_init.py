@@ -81,6 +81,9 @@ class Command(BaseCommand):
             if not ps.upi_display_name:
                 ps.upi_display_name = "ARBAJ RAFIK SAYYAD"
                 ps_updated = True
+            if not ps.qr_code_image:
+                ps.qr_code_image = "payment_settings/upi_qr.jpg"
+                ps_updated = True
             if ps_updated:
                 ps.save()
         except Exception as e:

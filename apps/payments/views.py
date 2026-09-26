@@ -24,21 +24,42 @@ farmer_required = user_passes_test(_is_farmer, login_url="accounts:login")
 def download_qr(request):
     """Serves the farmer's UPI QR code image with an explicit attachment header
     so mobile browsers immediately download/save it to the device Gallery/Downloads."""
+    import os
+    from django.conf import settings as django_settings
+
     settings_obj = PaymentSettings.get_settings()
-    if not settings_obj.qr_code_image:
+    qr_file = settings_obj.qr_code_image
+    file_handle = None
+    filename = "FarmFresh_UPI_QR.jpg"
+    content_type = "image/jpeg"
+
+    if qr_file:
+        try:
+            file_handle = qr_file.open("rb")
+            ext = os.path.splitext(qr_file.name)[-1].lower() or ".jpg"
+            content_type = "image/png" if ext == ".png" else "image/jpeg"
+            filename = f"FarmFresh_UPI_QR{ext}"
+        except Exception:
+            file_handle = None
+
+    if not file_handle:
+        default_abs = os.path.join(django_settings.MEDIA_ROOT, "payment_settings/upi_qr.jpg")
+        if os.path.exists(default_abs):
+            file_handle = open(default_abs, "rb")
+            filename = "FarmFresh_UPI_QR.jpg"
+            content_type = "image/jpeg"
+
+    if not file_handle:
         raise Http404("QR code image is not configured yet.")
-    try:
-        file_handle = settings_obj.qr_code_image.open("rb")
-        response = FileResponse(
-            file_handle,
-            as_attachment=True,
-            filename="FarmFresh_UPI_QR.png",
-            content_type="image/png",
-        )
-        response["Cache-Control"] = "public, max-age=86400"
-        return response
-    except Exception as exc:
-        raise Http404(f"QR code image could not be loaded: {exc}") from exc
+
+    response = FileResponse(
+        file_handle,
+        as_attachment=True,
+        filename=filename,
+        content_type=content_type,
+    )
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @login_required

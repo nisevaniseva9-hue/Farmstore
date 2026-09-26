@@ -230,11 +230,13 @@ class CustomerUpiFlowViewTests(TestCase):
         self.assertIn('attachment; filename="FarmFresh_UPI_QR.png"', response["Content-Disposition"])
 
     def test_download_qr_404_when_no_image(self):
+        from unittest.mock import patch
         s = PaymentSettings.get_settings()
         s.qr_code_image = None
         s.save()
-        response = self.client.get(reverse("payments:download_qr"))
-        self.assertEqual(response.status_code, 404)
+        with patch("os.path.exists", return_value=False):
+            response = self.client.get(reverse("payments:download_qr"))
+            self.assertEqual(response.status_code, 404)
 
 
 class FarmerPaymentManagementTests(TestCase):
