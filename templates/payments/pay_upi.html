@@ -17,15 +17,18 @@
                         <div class="fw-bold text-success mb-1 fs-6">📷 Method 1: Scan QR Code (Recommended)</div>
                         <div class="small text-muted mb-2">Scan with PhonePe, Google Pay, Paytm, or any UPI app:</div>
                         <div class="bg-white p-2 d-inline-block rounded-3 border shadow-sm mb-2">
-                            <img src="{{ settings.qr_code_image.url }}" alt="UPI QR Code" class="img-fluid" style="max-height: 220px; max-width: 220px;">
+                            <img src="{{ settings.qr_code_image.url }}" id="upi-qr-img" alt="UPI QR Code" class="img-fluid" style="max-height: 220px; max-width: 220px;">
                         </div>
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="{{ settings.qr_code_image.url }}" download="FarmFresh_UPI_QR.png" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-3">
-                                📥 Save / View QR Image
+                        <div class="d-flex justify-content-center flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-success btn-sm py-1 px-3 fw-semibold shadow-xs" id="save-qr-btn" onclick="saveQrCode()">
+                                📥 Save QR to Gallery
+                            </button>
+                            <a href="{% url 'payments:download_qr' %}" class="btn btn-outline-secondary btn-sm py-1 px-3">
+                                ⬇️ Download Image
                             </a>
                         </div>
                         <div class="small text-muted mt-2" style="font-size: 0.8rem;">
-                            💡 <em>On mobile?</em> Save the QR image above, open PhonePe or GPay, tap Scanner and choose the QR from your gallery!
+                            💡 <em>On mobile?</em> Tap <strong>"Save QR to Gallery"</strong> above (or press &amp; hold the QR code to save), then open PhonePe/GPay scanner and pick it from your gallery!
                         </div>
                     </div>
                 {% endif %}
@@ -101,6 +104,50 @@
 </div>
 
 <script>
+function saveQrCode() {
+    const btn = document.getElementById("save-qr-btn");
+    const originalText = btn ? btn.innerHTML : "";
+    if (btn) {
+        btn.innerHTML = "⏳ Saving...";
+        btn.disabled = true;
+    }
+
+    // Try client-side fetch + blob download first for seamless mobile save
+    fetch("{% url 'payments:download_qr' %}")
+        .then(res => {
+            if (!res.ok) throw new Error("Could not fetch QR image");
+            return res.blob();
+        })
+        .then(blob => {
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = "FarmFresh_UPI_QR.png";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+
+            if (btn) {
+                btn.innerHTML = "✅ Saved!";
+                btn.classList.replace("btn-outline-success", "btn-success");
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace("btn-success", "btn-outline-success");
+                    btn.disabled = false;
+                }, 3000);
+            }
+        })
+        .catch(err => {
+            // Fallback: direct navigation to server attachment endpoint
+            window.location.href = "{% url 'payments:download_qr' %}";
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+}
+
 function copyUpiId() {
     const input = document.getElementById("upi-id-input");
     if (input && input.value) {

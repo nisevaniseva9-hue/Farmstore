@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.orders.models import Order
@@ -17,8 +18,28 @@ farmer_required = user_passes_test(_is_farmer, login_url="accounts:login")
 
 
 # ---------------------------------------------------------------------------
-# Customer-facing: Scan & Pay / "I Have Paid"
+# Customer-facing: Scan & Pay / "I Have Paid" / Download QR
 # ---------------------------------------------------------------------------
+
+def download_qr(request):
+    """Serves the farmer's UPI QR code image with an explicit attachment header
+    so mobile browsers immediately download/save it to the device Gallery/Downloads."""
+    settings_obj = PaymentSettings.get_settings()
+    if not settings_obj.qr_code_image:
+        raise Http404("QR code image is not configured yet.")
+    try:
+        file_handle = settings_obj.qr_code_image.open("rb")
+        response = FileResponse(
+            file_handle,
+            as_attachment=True,
+            filename="FarmFresh_UPI_QR.png",
+            content_type="image/png",
+        )
+        response["Cache-Control"] = "public, max-age=86400"
+        return response
+    except Exception as exc:
+        raise Http404(f"QR code image could not be loaded: {exc}") from exc
+
 
 @login_required
 def pay_upi(request, order_number):

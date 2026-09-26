@@ -16,6 +16,8 @@ def invalidate_catalog_cache():
         from django.core.cache import cache
         cache.delete("home_page_catalog")
         cache.delete("catalog_products")
+        cache.delete("nav_categories")
+        cache.delete("catalog_product_list")
     except Exception:
         pass
 

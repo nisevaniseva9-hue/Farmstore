@@ -122,9 +122,9 @@ if DATABASE_URL:
     try:
         import dj_database_url
         DATABASES = {
-            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
         }
-    except ImportError:
+    except Exception:
         import urllib.parse
         parsed = urllib.parse.urlparse(DATABASE_URL)
         DATABASES = {
@@ -135,6 +135,8 @@ if DATABASE_URL:
                 "PASSWORD": parsed.password or "",
                 "HOST": parsed.hostname or "127.0.0.1",
                 "PORT": str(parsed.port or 5432),
+                "CONN_MAX_AGE": 600,
+                "CONN_HEALTH_CHECKS": True,
             }
         }
 elif DB_ENGINE == "sqlite3":
@@ -153,8 +155,14 @@ else:
             "PASSWORD": config("DB_PASSWORD", default=""),
             "HOST": config("DB_HOST", default="127.0.0.1"),
             "PORT": config("DB_PORT", default="5432"),
+            "CONN_MAX_AGE": 600,
+            "CONN_HEALTH_CHECKS": True,
         }
     }
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    DATABASES["default"].setdefault("CONN_MAX_AGE", 600)
+    DATABASES["default"].setdefault("CONN_HEALTH_CHECKS", True)
 
 # --------------------------------------------------------------------------
 # Auth / custom user model

@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
@@ -9,6 +10,8 @@ from django.urls import reverse
 
 from .forms import CategoryForm, ProductForm, ProductImageForm
 from .models import Category, Product, ProductImage
+
+CATALOG_LIST_CACHE_KEY = "catalog_product_list"
 
 
 # ---------------------------------------------------------------------------
@@ -40,6 +43,25 @@ def category_detail(request, slug):
 def product_list(request):
     query = request.GET.get("q", "").strip()
     category_slug = request.GET.get("category", "").strip()
+    page = request.GET.get("page")
+
+    is_default_view = not query and not category_slug and (not page or page == "1")
+
+    if is_default_view:
+        cached = cache.get(CATALOG_LIST_CACHE_KEY)
+        if cached is not None:
+            categories, page_obj = cached
+            return render(
+                request,
+                "catalog/product_list.html",
+                {
+                    "page_obj": page_obj,
+                    "query": "",
+                    "category_slug": "",
+                    "categories": categories,
+                },
+            )
+
     products = (
         Product.objects.filter(is_active=True)
         .annotate(_annotated_stock=Coalesce(Sum("inventory_transactions__quantity"), Value(Decimal("0"))))
@@ -51,9 +73,13 @@ def product_list(request):
         products = products.filter(name__icontains=query)
     if category_slug:
         products = products.filter(category__slug=category_slug)
-    categories = Category.objects.filter(is_active=True).order_by("display_order", "name")
+    categories = list(Category.objects.filter(is_active=True).order_by("display_order", "name"))
     paginator = Paginator(products, 12)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    page_obj = paginator.get_page(page)
+
+    if is_default_view:
+        cache.set(CATALOG_LIST_CACHE_KEY, (categories, page_obj), 300)
+
     return render(
         request,
         "catalog/product_list.html",

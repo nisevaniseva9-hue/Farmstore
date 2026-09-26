@@ -5,6 +5,7 @@ from . import views
 app_name = "payments"
 
 urlpatterns = [
+    path("pay/upi/download-qr/", views.download_qr, name="download_qr"),
     path("pay/upi/<str:order_number>/", views.pay_upi, name="pay_upi"),
     path("pay/upi/<str:order_number>/switch-cod/", views.switch_to_cod, name="switch_to_cod"),
 ]

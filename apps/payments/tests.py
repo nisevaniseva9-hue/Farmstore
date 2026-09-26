@@ -193,9 +193,13 @@ class CustomerUpiFlowViewTests(TestCase):
         self.assertEqual(order.payment_method, Order.PaymentMethod.COD)
 
     def test_pay_upi_template_has_no_dangerous_script_redirects(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
         s = PaymentSettings.get_settings()
         s.upi_id = "test@upi"
         s.upi_display_name = "Farmer Abdul"
+        s.qr_code_image = SimpleUploadedFile(
+            "qr.png", b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82", content_type="image/png"
+        )
         s.save()
         cart = make_cart()
         cart.add(self.product, Decimal("1"))
@@ -211,6 +215,26 @@ class CustomerUpiFlowViewTests(TestCase):
         self.assertNotIn("phonepe://", content)
         self.assertIn("Method 2: Pay to UPI ID", content)
         self.assertIn("Switch to COD", content)
+        self.assertIn("Save QR to Gallery", content)
+
+    def test_download_qr_returns_attachment_file_response(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        s = PaymentSettings.get_settings()
+        s.qr_code_image = SimpleUploadedFile(
+            "qr.png", b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82", content_type="image/png"
+        )
+        s.save()
+        response = self.client.get(reverse("payments:download_qr"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "image/png")
+        self.assertIn('attachment; filename="FarmFresh_UPI_QR.png"', response["Content-Disposition"])
+
+    def test_download_qr_404_when_no_image(self):
+        s = PaymentSettings.get_settings()
+        s.qr_code_image = None
+        s.save()
+        response = self.client.get(reverse("payments:download_qr"))
+        self.assertEqual(response.status_code, 404)
 
 
 class FarmerPaymentManagementTests(TestCase):
